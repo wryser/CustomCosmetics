@@ -119,7 +119,7 @@ namespace CustomCosmetics
                 Harmony harmony = Harmony.CreateAndPatchAll(typeof(Plugin).Assembly, PluginInfo.GUID);
                 Type rigCache = typeof(GorillaTagger).Assembly.GetType("VRRigCache");
                 harmony.Patch(AccessTools.Method(rigCache, "AddRigToGorillaParent"), postfix: new HarmonyMethod(typeof(RigCreatePatch), nameof(RigCreatePatch.Patch)));
-                harmony.Patch(AccessTools.Method(rigCache, "RemoveRigFromGorillaParent"), postfix: new HarmonyMethod(typeof(RigRemovePatch), nameof(RigRemovePatch.Patch)));
+                harmony.Patch(AccessTools.Method(rigCache, "RemoveRigFromGorillaParent"), prefix: new HarmonyMethod(typeof(RigRemovePatch), nameof(RigRemovePatch.Patch)));
             }
         }
 
@@ -276,26 +276,33 @@ namespace CustomCosmetics
 
         public void RegisterPlayer(NetPlayer player, VRRig playerRig)
         {
-            if (!playerRig.isLocal)
+            try
             {
-                Hashtable props = PhotonNetwork.CurrentRoom.GetPlayer(player.ID).CustomProperties;
-                Photon.Realtime.Player playerr = PhotonNetwork.CurrentRoom.GetPlayer(player.ID);
-                normalplayers.Add(playerRig, playerr);
-                Debug.Log($"{player.NickName} entered the room");
-                if(props.TryGetValue("CustomHat", out object hat) || props.TryGetValue("CustomHoldable", out object hold) || props.TryGetValue("CustomBadge", out object badge))
+                if (!playerRig.isLocal)
                 {
-                    cosmeticsplayers.Add(playerRig, playerr);
-                    SetCosmetics(playerRig, props, playerr);
+                    Hashtable props = PhotonNetwork.CurrentRoom.GetPlayer(player.ID).CustomProperties;
+                    Photon.Realtime.Player playerr = PhotonNetwork.CurrentRoom.GetPlayer(player.ID);
+                    normalplayers.Add(playerRig, playerr);
+                    Debug.Log($"{player.NickName} entered the room");
+                    if (props.TryGetValue("CustomHat", out object hat) || props.TryGetValue("CustomHoldable", out object hold) || props.TryGetValue("CustomBadge", out object badge))
+                    {
+                        cosmeticsplayers.Add(playerRig, playerr);
+                        SetCosmetics(playerRig, props, playerr);
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                Debug.Log(e.Message);
             }
         }
         public void UnregisterPlayer(NetPlayer p, VRRig r)
         {
-            Photon.Realtime.Player player = normalplayers[r];
             try
             {
                 if (!r.isLocal)
                 {
+                    Photon.Realtime.Player player = normalplayers[r];
                     Hashtable props = player.CustomProperties;
                     if(props.TryGetValue("CustomHat", out object hat) || props.TryGetValue("CustomHoldable", out object hold) || props.TryGetValue("CustomBadge", out object badge))
                     {
