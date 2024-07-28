@@ -1,4 +1,5 @@
-﻿using BepInEx;
+﻿#define RELEASE
+using BepInEx;
 using BepInEx.Configuration;
 using GorillaLocomotion;
 using GorillaTag.Reactions;
@@ -260,20 +261,21 @@ namespace CustomCosmetics
                 }
             }
         }
-        private void OnGUI()
+#if DEBUG
+        void OnGUI()
         {
             GUILayout.Label("Custom Properties");
             GUILayout.BeginArea(new Rect(10, 10, Screen.width, 500));
-            if(PhotonNetwork.InRoom)
+            if (PhotonNetwork.InRoom)
             {
-                foreach(Photon.Realtime.Player player in PhotonNetwork.PlayerList)
+                foreach (Photon.Realtime.Player player in PhotonNetwork.PlayerList)
                 {
                     GUILayout.Label(player.NickName + player.CustomProperties.ToString());
                 }
             }
             GUILayout.EndArea();
         }
-
+#endif
         public void RegisterPlayer(NetPlayer player, VRRig playerRig)
         {
             try
