@@ -7,6 +7,6 @@
     {
         public const string GUID = "com.wryser.gorillatag.customcosmetics";
         public const string Name = "CustomCosmetics";
-        public const string Version = "1.0.0";
+        public const string Version = "0.1.0";
     }
 }

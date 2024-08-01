@@ -14,7 +14,8 @@ namespace CustomCosmetics
 
         public override void OnPostModSetup()
         {
-            selectionHandler.maxIndex = 3;
+            selectionHandler.maxIndex = 4;
+            Plugin.instance.cosmeticsLoaded += CosmeticsLoaded;
         }
 
         public override string OnGetScreenContent()
@@ -22,12 +23,28 @@ namespace CustomCosmetics
             StringBuilder str = new StringBuilder();
             str.AppendLine("<color=yellow>==</color> Cosmetics <color=yellow>==</color>");
             str.AppendLines(1);
-            str.AppendLine(selectionHandler.GetOriginalBananaOSSelectionText(0, "Holdables"));
-            str.AppendLine(selectionHandler.GetOriginalBananaOSSelectionText(1, "Hats"));
-            str.AppendLine(selectionHandler.GetOriginalBananaOSSelectionText(2, "Badges"));
-            str.AppendLine(selectionHandler.GetOriginalBananaOSSelectionText(3, "Settings"));
+            if (Plugin.instance.assetsLoaded)
+            {
+                selectionHandler.maxIndex = 4;
+                str.AppendLine(selectionHandler.GetOriginalBananaOSSelectionText(0, "Holdables"));
+                str.AppendLine(selectionHandler.GetOriginalBananaOSSelectionText(1, "Hats"));
+                str.AppendLine(selectionHandler.GetOriginalBananaOSSelectionText(2, "Badges"));
+                str.AppendLine(selectionHandler.GetOriginalBananaOSSelectionText(3, "Materials"));
+                str.AppendLine(selectionHandler.GetOriginalBananaOSSelectionText(4, "Settings"));
+            }
+            else
+            {
+                selectionHandler.maxIndex = 0;
+                str.AppendLine("Loading Cosmetics!");
+            }
             return str.ToString();
         }
+
+        void CosmeticsLoaded()
+        {
+            OnGetScreenContent();
+        }
+
         public override void OnButtonPressed(WatchButtonType buttonType)
         {
             switch (buttonType)
@@ -53,6 +70,10 @@ namespace CustomCosmetics
                         SwitchToPage(typeof(BadgePage));
                     }
                     else if (index == 3)
+                    {
+                        SwitchToPage(typeof(MaterialPage));
+                    }
+                    else if (index == 4)
                     {
                         SwitchToPage(typeof(SettingsPage));
                     }

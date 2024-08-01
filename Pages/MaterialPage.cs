@@ -7,12 +7,12 @@ using System.Text;
 
 namespace CustomCosmetics
 {
-    class BadgePage : WatchPage
+    class MaterialPage : WatchPage
     {
-        public override string Title => "Badges";
+        public override string Title => "Materials";
 
         public override bool DisplayOnMainMenu => false;
-        List<string> badges = new List<string>();
+        List<string> mats = new List<string>();
         int pageNum = 1;
         int currentSelected = 0;
         int maxCurrentPage;
@@ -22,27 +22,27 @@ namespace CustomCosmetics
         public override void OnPostModSetup()
         {
             base.OnPostModSetup();
-            string path = Plugin.instance.cosmeticPath + "/Badges";
+            string path = Plugin.instance.cosmeticPath + "/Materials";
             foreach (string file in Directory.GetFiles(path))
             {
-                badges.Add(file);
+                mats.Add(file);
             }
         }
 
         public override string OnGetScreenContent()
         {
             StringBuilder str = new StringBuilder();
-            double mathstuff = Convert.ToDouble(badges.Count) / 9.0;
+            double mathstuff = Convert.ToDouble(mats.Count) / 9.0;
             maxPages = Math.Ceiling(mathstuff);
-            str.AppendLine("<color=yellow>==</color> Badges <color=yellow>==</color>");
+            str.AppendLine("<color=yellow>==</color> Materials <color=yellow>==</color>");
             if (pageNum == maxPages)
             {
-                int t = 9 * pageNum - badges.Count;
+                int t = 9 * pageNum - mats.Count;
                 int ii = 0;
                 minCurrentPage = 9 * pageNum - 9;
                 for (int i = 9 * pageNum - 9; i < 9 * pageNum - t; i++)
                 {
-                    string hatName = Path.GetFileNameWithoutExtension(badges[i]);
+                    string hatName = Path.GetFileNameWithoutExtension(mats[i]);
                     str.AppendLine(selectionHandler.GetOriginalBananaOSSelectionText(ii, hatName));
                     ii++;
                     minCurrentPage++;
@@ -57,7 +57,7 @@ namespace CustomCosmetics
                 int t = 9 * pageNum - 9;
                 for (int i = 9 * pageNum - 9; i < 9 * pageNum; i++)
                 {
-                    string hatName = Path.GetFileNameWithoutExtension(badges[i]);
+                    string hatName = Path.GetFileNameWithoutExtension(mats[i]);
                     str.AppendLine(selectionHandler.GetOriginalBananaOSSelectionText(ii, hatName));
                     ii++;
                     minCurrentPage++;
@@ -110,8 +110,8 @@ namespace CustomCosmetics
                     selectionHandler.currentIndex = 0;
                     break;
                 case WatchButtonType.Enter:
-                    Plugin.instance.GetInfo(Path.GetFileName(badges[currentSelected]), "Badge");
-                    SwitchToPage(typeof(BadgeLoadPage));
+                    Plugin.instance.GetInfo(Path.GetFileName(mats[currentSelected]), "Material");
+                    SwitchToPage(typeof(MaterialLoadPage));
                     break;
                 case WatchButtonType.Back:
                     SwitchToPage(typeof(CosmeticPage));
