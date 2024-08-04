@@ -15,7 +15,7 @@ namespace CustomCosmetics
         public override void OnPostModSetup()
         {
             selectionHandler.maxIndex = 4;
-            Plugin.instance.cosmeticsLoaded += CosmeticsLoaded;
+            Plugin.instance.cosmeticsLoaded.AddListener(CosmeticsLoaded);
         }
 
         public override string OnGetScreenContent()

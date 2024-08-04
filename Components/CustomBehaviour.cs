@@ -1,5 +1,4 @@
-﻿using CustomCosmetics.Components;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
@@ -8,20 +7,10 @@ namespace CustomCosmetics
 {
     public class CustomBehaviour : MonoBehaviour
     {
-        public bool usingTrigger;
         public bool pressingButton;
         public bool justPressed;
         public string button;
-        public Collider trigger;
         public List<GameObject> objectsToToggle = new List<GameObject>();
-
-        public void Start()
-        {
-            if(usingTrigger)
-            {
-                trigger.AddComponent<Trigger>().behaviour = this;
-            }
-        }
 
         void Update()
         {
@@ -53,20 +42,17 @@ namespace CustomCosmetics
                     break;
             }
 
-            if(!usingTrigger)
+            if (pressingButton && !justPressed)
             {
-                if (pressingButton && !justPressed)
+                for (int i = 0; i < objectsToToggle.Count; i++)
                 {
-                    for (int i = 0; i < objectsToToggle.Count; i++)
-                    {
-                        objectsToToggle[i].SetActive(!objectsToToggle[i].activeSelf);
-                    }
-                    justPressed = true;
+                    objectsToToggle[i].SetActive(!objectsToToggle[i].activeSelf);
                 }
-                else if (!pressingButton && justPressed)
-                {
-                    justPressed = false;
-                }
+                justPressed = true;
+            }
+            else if (!pressingButton && justPressed)
+            {
+                justPressed = false;
             }
         }
     }

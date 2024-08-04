@@ -7,8 +7,10 @@ public class HoldableDescriptor : MonoBehaviour
     public string Name = "";
     public string Author = "";
     public string Description = "";
-    public bool leftHand = false;
+    public GameObject leftHandObject;
+    public GameObject rightHandObject;
     public bool customColours = false;
+    public string id;
 
     public List<CosmeticBehaviour> behaviours = new List<CosmeticBehaviour>();
 

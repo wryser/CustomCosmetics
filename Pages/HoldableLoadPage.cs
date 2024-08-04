@@ -27,12 +27,20 @@ namespace CustomCosmetics
         public override string OnGetScreenContent()
         {
             StringBuilder str = new StringBuilder();
+            str.AppendLine($"<color=yellow>==</color> Holdable <color=yellow>==</color>");
             if (Plugin.instance.usingTextMethod)
             {
-                str.AppendLine($"<size=0.60> Holdable Name: {Plugin.instance.cosmeticName}</size>");
-                str.AppendLine($"<size=0.60> Holdable Author: {Plugin.instance.cosmeticAuthor}</size>");
-                str.AppendLine($"<size=0.60> Holdable Description: {Plugin.instance.cosmeticDescription}</size>");
-                str.AppendLine($"\n<color=red><size=0.70> This cosmetic is using the old descriptor system, this system is unsupported and has less features. If you made this cosmetic please update it.</size></color>");
+                str.StartSize(0.65f);
+                str.AppendLines(1);
+                str.AppendLine("Name:");
+                str.AppendLine(Plugin.instance.cosmeticName);
+                str.AppendLine("Author:");
+                str.AppendLine(Plugin.instance.cosmeticAuthor);
+                str.AppendLine("Description:");
+                str.AppendLine(Plugin.instance.cosmeticDescription);
+                str.AppendLines(2);
+                str.EndSize();
+                str.AppendLine($"\n<color=red><size=0.40> This cosmetic is using the old descriptor system, this system is unsupported and has less features. If you made this cosmetic please update it.</size></color>");
                 str.AppendLines(2, "");
                 if (Plugin.instance.leftHand && Plugin.instance.Lholdable.Value == Plugin.instance.currentCosmeticFile)
                 {
@@ -55,35 +63,44 @@ namespace CustomCosmetics
                     str.AppendLine(selectionHandler.GetOriginalBananaOSSelectionText(0, "Set Right Hand"));
                     desetRHand = false;
                 }
+                selectionHandler.currentIndex = 0;
             }
             else
             {
                 holdable = Plugin.instance.holdableDes;
-                str.AppendLine($"<size=0.60> Holdable Name: {holdable.Name}</size>");
-                str.AppendLine($"<size=0.60> Holdable Author: {holdable.Author}</size>");
-                str.AppendLine($"<size=0.60> Holdable Description: {holdable.Description}</size>");
+                str.StartSize(0.65f);
+                str.AppendLines(1);
+                str.AppendLine("Name:");
+                str.AppendLine(holdable.Name);
+                str.AppendLine("Author:");
+                str.AppendLine(holdable.Author);
+                str.AppendLine("Description:");
+                str.AppendLine(holdable.Description);
+                str.AppendLines(2);
+                str.EndSize();
                 str.AppendLines(2, "");
-                if (Plugin.instance.leftHand && Plugin.instance.Lholdable.Value == Plugin.instance.currentCosmeticFile)
+                if (Plugin.instance.Lholdable.Value == Plugin.instance.currentCosmeticFile)
                 {
                     str.AppendLine(selectionHandler.GetOriginalBananaOSSelectionText(0, "Unequip Left Hand"));
                     desetLHand = true;
                 }
-                else if (Plugin.instance.leftHand)
+                else
                 {
                     str.AppendLine(selectionHandler.GetOriginalBananaOSSelectionText(0, "Equip Left Hand"));
                     desetLHand = false;
                 }
 
-                if (!Plugin.instance.leftHand && Plugin.instance.Rholdable.Value == Plugin.instance.currentCosmeticFile)
+                if (Plugin.instance.Rholdable.Value == Plugin.instance.currentCosmeticFile)
                 {
-                    str.AppendLine(selectionHandler.GetOriginalBananaOSSelectionText(0, "Unequip Right Hand"));
+                    str.AppendLine(selectionHandler.GetOriginalBananaOSSelectionText(1, "Unequip Right Hand"));
                     desetRHand = true;
                 }
-                else if (!Plugin.instance.leftHand)
+                else
                 {
-                    str.AppendLine(selectionHandler.GetOriginalBananaOSSelectionText(0, "Equip Right Hand"));
+                    str.AppendLine(selectionHandler.GetOriginalBananaOSSelectionText(1, "Equip Right Hand"));
                     desetRHand = false;
                 }
+                selectionHandler.maxIndex = 1;
             }
             return str.ToString();
         }
@@ -98,26 +115,54 @@ namespace CustomCosmetics
                     selectionHandler.MoveSelectionDown();
                     break;
                 case WatchButtonType.Enter:
-                    if(Plugin.instance.leftHand)
+                    if(selectionHandler.currentIndex == 0)
                     {
-                        if (!desetLHand)
+                        if (!Plugin.instance.usingTextMethod)
                         {
-                            Plugin.instance.LoadHoldable(Plugin.instance.currentCosmeticFile);
+                            if (!desetLHand)
+                            {
+                                Plugin.instance.LoadHoldable(Plugin.instance.currentCosmeticFile, true);
+                            }
+                            else
+                            {
+                                Plugin.instance.LoadHoldable("DisableL", true);
+                            }
                         }
                         else
                         {
-                            Plugin.instance.LoadHoldable("DisableL");
+                            if (Plugin.instance.leftHand)
+                            {
+                                if (!desetLHand)
+                                {
+                                    Plugin.instance.LoadHoldable(Plugin.instance.currentCosmeticFile, true);
+                                }
+                                else
+                                {
+                                    Plugin.instance.LoadHoldable("DisableL", true);
+                                }
+                            }
+                            else
+                            {
+                                if (!desetRHand)
+                                {
+                                    Plugin.instance.LoadHoldable(Plugin.instance.currentCosmeticFile, false);
+                                }
+                                else
+                                {
+                                    Plugin.instance.LoadHoldable("DisableR", false);
+                                }
+                            }
                         }
                     }
-                    else
+                    else if(selectionHandler.currentIndex == 1)
                     {
                         if (!desetRHand)
                         {
-                            Plugin.instance.LoadHoldable(Plugin.instance.currentCosmeticFile);
+                            Plugin.instance.LoadHoldable(Plugin.instance.currentCosmeticFile, false);
                         }
                         else
                         {
-                            Plugin.instance.LoadHoldable("DisableR");
+                            Plugin.instance.LoadHoldable("DisableR", false);
                         }
                     }
                     OnGetScreenContent();

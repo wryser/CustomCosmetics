@@ -27,16 +27,24 @@ namespace CustomCosmetics
         public override string OnGetScreenContent()
         {
             StringBuilder str = new StringBuilder();
+            str.AppendLine($"<color=yellow>==</color> Material <color=yellow>==</color>");
             if (Plugin.instance.usingTextMethod)
             {
-                str.AppendLine($"<size=0.60> Material Name: {Plugin.instance.cosmeticName}</size>");
-                str.AppendLine($"<size=0.60> Material Author: {Plugin.instance.cosmeticAuthor}</size>");
-                str.AppendLine($"<size=0.60> Material Description: {Plugin.instance.cosmeticDescription}</size>");
+                str.StartSize(0.65f);
+                str.AppendLines(1);
+                str.AppendLine("Name:");
+                str.AppendLine(Plugin.instance.cosmeticName);
+                str.AppendLine("Author:");
+                str.AppendLine(Plugin.instance.cosmeticAuthor);
+                str.AppendLine("Description:");
+                str.AppendLine(Plugin.instance.cosmeticDescription);
+                str.AppendLines(2);
+                str.EndSize();
                 if (Plugin.instance.materialCustomColours)
                 {
-                    str.AppendLine($"\n<size=0.50> Uses Custom Colours</size>");
+                    str.AppendLine($"\n<size=0.65> Uses Custom Colours</size>");
                 }
-                str.AppendLine($"\n<color=red><size=0.70> This cosmetic is using the old descriptor system, this system is unsupported and has less features. If you made this cosmetic please update it to use the new features.</size></color>");
+                str.AppendLine($"\n<color=red><size=0.40> This cosmetic is using the old descriptor system, this system is unsupported and has less features. If you made this cosmetic please update it to use the new features.</size></color>");
                 str.AppendLines(2, "");
                 if (Plugin.instance.material.Value == Plugin.instance.currentCosmeticFile)
                 {
@@ -63,12 +71,19 @@ namespace CustomCosmetics
             else
             {
                 mat = Plugin.instance.matDes;
-                str.AppendLine($"<size=0.60> Material Name: {mat.Name}</size>");
-                str.AppendLine($"<size=0.60> Material Author: {mat.Author}</size>");
-                str.AppendLine($"<size=0.60> Material Description: {mat.Description}</size>");
-                if(mat.customColors)
+                str.StartSize(0.65f);
+                str.AppendLines(1);
+                str.AppendLine("Name:");
+                str.AppendLine(mat.Name);
+                str.AppendLine("Author:");
+                str.AppendLine(mat.Author);
+                str.AppendLine("Description:");
+                str.AppendLine(mat.Description);
+                str.AppendLines(2);
+                str.EndSize();
+                if (mat.customColors)
                 {
-                    str.AppendLine($"\n<size=0.50> Uses Custom Colours</size>");
+                    str.AppendLine($"\n<size=0.65> Uses Custom Colours</size>");
                 }
                 str.AppendLines(2, "");
                 if (Plugin.instance.material.Value == Plugin.instance.currentCosmeticFile)

@@ -3,11 +3,11 @@
 namespace CustomCosmetics.Patches
 {
     [HarmonyPatch]
-    public class RigRemovePatch
+    public class RigJoinPatch
     {
         public static void Patch(NetPlayer player, VRRig vrrig)
         {
-            Plugin.instance.UnregisterPlayer(player, vrrig);
+            Plugin.instance.CheckPlayer(player, vrrig);
         }
     }
 }

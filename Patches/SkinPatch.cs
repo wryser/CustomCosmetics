@@ -21,6 +21,10 @@ namespace CustomCosmetics.Patches
                 {
                     Plugin.instance.EnableMaterial();
                 }
+                else if(useDefaultBodySkin)
+                {
+                    Plugin.instance.EnableNetworkMaterial(rig);
+                }
             }
             catch(Exception e)
             {

@@ -6,4 +6,5 @@ public class MaterialDescriptor : MonoBehaviour
     public string Author = "";
     public string Description = "";
     public bool customColors;
+    public string id;
 }
