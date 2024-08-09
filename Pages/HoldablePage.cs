@@ -34,6 +34,11 @@ namespace CustomCosmetics
         public override string OnGetScreenContent()
         {
             StringBuilder str = new StringBuilder();
+            if (holdables.Count <= 0)
+            {
+                str.AppendLine($"No {Title} installed");
+                return str.ToString();
+            }
             double mathstuff = Convert.ToDouble(holdables.Count) / 9.0;
             maxPages = Math.Ceiling(mathstuff);
             str.AppendLine("<color=yellow>==</color> Holdables <color=yellow>==</color>");

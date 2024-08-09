@@ -32,6 +32,11 @@ namespace CustomCosmetics
         public override string OnGetScreenContent()
         {
             StringBuilder str = new StringBuilder();
+            if (mats.Count <= 0)
+            {
+                str.AppendLine($"No {Title} installed");
+                return str.ToString();
+            }
             double mathstuff = Convert.ToDouble(mats.Count) / 9.0;
             maxPages = Math.Ceiling(mathstuff);
             str.AppendLine("<color=yellow>==</color> Materials <color=yellow>==</color>");

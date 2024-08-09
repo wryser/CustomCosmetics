@@ -1,30 +1,20 @@
 ﻿#define RELEASE
 using BepInEx;
 using BepInEx.Configuration;
-using GorillaLocomotion;
-using GorillaTag.Reactions;
 using Photon.Pun;
-using Photon.Realtime;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
-using UnityEngine.Animations.Rigging;
 using UnityEngine.SceneManagement;
-using UnityEngine.Timeline;
 using UnityEngine.UI;
 using GorillaNetworking;
 using HarmonyLib;
-using ExitGames.Client.Photon;
 using CustomCosmetics.Patches;
-using GorillaNetworking.Store;
 using System.Threading.Tasks;
 using System.Collections;
-using System.Net.Sockets;
-using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.Events;
-using System.Reflection;
-using Unity.Mathematics;
+using BananaOS;
 
 namespace CustomCosmetics
 {
@@ -148,40 +138,40 @@ namespace CustomCosmetics
                 foreach (string hat in Directory.GetFiles(cosmeticPath + "/Hats/"))
                 {
                     AssetBundle hatbundle = await LoadBundle(hat);
-                    GameObject temphat = Instantiate(hatbundle.LoadAsset<GameObject>("hat"));
+                    GameObject temphat = hatbundle.LoadAsset<GameObject>("hat");
                     temphat.transform.SetParent(cosmeticsParent.transform);
                     hatbundle.Unload(false);
-                    assetCache.Add(Path.GetFileName(hat), temphat);
+                    assetCache.TryAdd(Path.GetFileName(hat), temphat);
                     string hatname = GetCosName(temphat, "Hat");
                     nameAssetCache.Add(hatname, temphat);
                 }
                 foreach (string holdable in Directory.GetFiles(cosmeticPath + "/Holdables/"))
                 {
                     AssetBundle holdablebundle = await LoadBundle(holdable);
-                    GameObject tempholdable = Instantiate(holdablebundle.LoadAsset<GameObject>("holdABLE"));
+                    GameObject tempholdable = holdablebundle.LoadAsset<GameObject>("holdABLE");
                     tempholdable.transform.SetParent(cosmeticsParent.transform);
                     holdablebundle.Unload(false);
-                    assetCache.Add(Path.GetFileName(holdable), tempholdable);
+                    assetCache.TryAdd(Path.GetFileName(holdable), tempholdable);
                     string holdablename = GetCosName(tempholdable, "Holdable");
                     nameAssetCache.Add(holdablename, tempholdable);
                 }
                 foreach (string badge in Directory.GetFiles(cosmeticPath + "/Badges/"))
                 {
                     AssetBundle badgebundle = await LoadBundle(badge);
-                    GameObject tempbadge = Instantiate(badgebundle.LoadAsset<GameObject>("badge"));
+                    GameObject tempbadge = badgebundle.LoadAsset<GameObject>("badge");
                     tempbadge.transform.SetParent(cosmeticsParent.transform);
                     badgebundle.Unload(false);
-                    assetCache.Add(Path.GetFileName(badge), tempbadge);
+                    assetCache.TryAdd(Path.GetFileName(badge), tempbadge);
                     string badgename = GetCosName(tempbadge, "Badge");
                     nameAssetCache.Add(badgename, tempbadge);
                 }
                 foreach (string material in Directory.GetFiles(cosmeticPath + "/Materials/"))
                 {
                     AssetBundle materialbundle = await LoadBundle(material);
-                    GameObject tempmaterial = Instantiate(materialbundle.LoadAsset<GameObject>("material"));
+                    GameObject tempmaterial = materialbundle.LoadAsset<GameObject>("material");
                     tempmaterial.transform.SetParent(cosmeticsParent.transform);
                     materialbundle.Unload(false);
-                    assetCache.Add(Path.GetFileName(material), tempmaterial);
+                    assetCache.TryAdd(Path.GetFileName(material), tempmaterial);
                     string matname = GetCosName(tempmaterial, "Material");
                     nameAssetCache.Add(matname, tempmaterial);
                 }
@@ -192,32 +182,32 @@ namespace CustomCosmetics
                 string savedbadge = badge.Value;
                 string savedmaterial = material.Value;
                 string savedtagmaterial = taggedMaterial.Value;
-                if (savedhat != "")
+                if (File.Exists(cosmeticPath + "/Hats/" + savedhat))
                 {
                     GetInfo(savedhat, "Hat");
                     LoadHat(cosmeticPath + "/Hats/" + savedhat);
                 }
-                if (savedrholdable != "")
+                if (File.Exists(cosmeticPath + "/Holdables/" + savedrholdable))
                 {
                     GetInfo(savedrholdable, "Holdable");
                     LoadHoldable(cosmeticPath + "/Holdables/" + savedrholdable, false);
                 }
-                if (savedlholdable != "")
+                if (File.Exists(cosmeticPath + "/Holdables/" + savedlholdable))
                 {
                     GetInfo(savedlholdable, "Holdable");
                     LoadHoldable(cosmeticPath + "/Holdables/" + savedlholdable, true);
                 }
-                if (savedbadge != "")
+                if (File.Exists(cosmeticPath + "/Badges/" + savedbadge))
                 {
                     GetInfo(savedbadge, "Badge");
                     LoadBadge(cosmeticPath + "/Badges/" + savedbadge);
                 }
-                if (savedmaterial != "")
+                if (File.Exists(cosmeticPath + "/Materials/" + savedmaterial))
                 {
                     GetInfo(savedmaterial, "Material");
                     LoadMaterial(cosmeticPath + "/Materials/" + savedmaterial, 0);
                 }
-                if (savedtagmaterial != "")
+                if (File.Exists(cosmeticPath + "/Materials/" + savedtagmaterial))
                 {
                     GetInfo(savedtagmaterial, "Material");
                     LoadMaterial(cosmeticPath + "/Materials/" + savedtagmaterial, 2);
@@ -230,6 +220,9 @@ namespace CustomCosmetics
                 Debug.LogError(ex.ToString());
             }
             Debug.Log("Finished Loading Custom Cosmetics");
+            var table = PhotonNetwork.LocalPlayer.CustomProperties;
+            table.AddOrUpdate("Colour", GorillaTagger.Instance.offlineVRRig.playerColor.ToString());
+            PhotonNetwork.LocalPlayer.SetCustomProperties(table);
         }
 
         public void LoadHoldable(string file, bool lHand)
@@ -602,7 +595,9 @@ namespace CustomCosmetics
                     Debug.Log($"{playerr.NickName} is using Custom Cosmetics, material is: {testttt.ToString()}");
                     if (nameAssetCache.TryGetValue(testttt.ToString(), out GameObject mat))
                     {
-                        LoadNetworkMaterial(testttt.ToString(), 0, playerRig, playerr);
+                        props.TryGetValue("Colour", out object color);
+                        Color c = parseColor(color.ToString());
+                        LoadNetworkMaterial(testttt.ToString(), 0, playerRig, playerr, c);
                     }
                 }
                 if (props.TryGetValue("CustomTagMaterial", out object tagmat))
@@ -610,7 +605,9 @@ namespace CustomCosmetics
                     Debug.Log($"{playerr.NickName} is using Custom Cosmetics, tagged material is: {tagmat.ToString()}");
                     if (nameAssetCache.TryGetValue(tagmat.ToString(), out GameObject taggmat))
                     {
-                        LoadNetworkMaterial(tagmat.ToString(), 2, playerRig, playerr);
+                        props.TryGetValue("Colour", out object co);
+                        Color col = parseColor(co.ToString());
+                        LoadNetworkMaterial(tagmat.ToString(), 2, playerRig, playerr, col);
                     }
                 }
             }
@@ -715,7 +712,7 @@ namespace CustomCosmetics
                 }
             }
         }
-        public void LoadNetworkMaterial(string file, int materialIndex, VRRig rig, Photon.Realtime.Player player)
+        public void LoadNetworkMaterial(string file, int materialIndex, VRRig rig, Photon.Realtime.Player player, Color colour)
         {
             if (file != "")
             {
@@ -1071,17 +1068,24 @@ namespace CustomCosmetics
             {
                 if (p.CustomProperties.TryGetValue("CustomMaterial", out object mat))
                 {
-                    LoadNetworkMaterial(mat.ToString(), 0, rig, p);
+                    p.CustomProperties.TryGetValue("Colour", out object co);
+                    Color col = parseColor(co.ToString());
+                    LoadNetworkMaterial(mat.ToString(), 0, rig, p, col);
                 }
                 if (p.CustomProperties.TryGetValue("CustomTagMaterial", out object tagmat))
                 {
-                    LoadNetworkMaterial(tagmat.ToString(), 2, rig, p);
+                    p.CustomProperties.TryGetValue("Colour", out object color);
+                    Color c = parseColor(color.ToString());
+                    LoadNetworkMaterial(tagmat.ToString(), 2, rig, p, c);
                 }
             }
         }
 
         public void UpdateColour(Color colour)
         {
+            var table = PhotonNetwork.LocalPlayer.CustomProperties;
+            table.AddOrUpdate("Colour", colour.ToString());
+            PhotonNetwork.LocalPlayer.SetCustomProperties(table);
             if (currentMaterial.mat != null)
             {
                 VRRig rig = GorillaTagger.Instance.offlineVRRig;
@@ -1094,6 +1098,7 @@ namespace CustomCosmetics
                 sharedMaterials[0] = rig.materialsToChangeTo[rig.setMatIndex];
                 sharedMaterials[1] = rig.defaultSkin.chestMaterial;
                 rig.mainSkin.sharedMaterials = sharedMaterials;
+                
             }
         }
 
@@ -1160,6 +1165,38 @@ namespace CustomCosmetics
                         break;
                 }
             }
+        }
+        Color parseColor(string sourceString)
+        {
+            if (sourceString == null || sourceString == "" || sourceString == "$")
+            {
+                return Color.black;
+            }
+            string outString;
+            Color outColor;
+            string[] splitString;
+
+            // Trim extranious parenthesis
+            outString = sourceString.Replace("(", string.Empty);
+            outString = outString.Replace(")", string.Empty);
+            outString = outString.Replace("RGBA", string.Empty);
+
+            // Split delimted values into an array
+            splitString = outString.Split(",");
+
+            // Build new Vector3 from array elements
+            float x;
+            float y;
+            float z;
+            float.TryParse(splitString[0], out x);
+            float.TryParse(splitString[1], out y);
+            float.TryParse(splitString[2], out z);
+            outColor.r = x;
+            outColor.g = y;
+            outColor.b = z;
+            outColor.a = 1f;
+
+            return outColor;
         }
     }
 }

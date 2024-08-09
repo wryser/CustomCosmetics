@@ -32,6 +32,11 @@ namespace CustomCosmetics
         public override string OnGetScreenContent()
         {
             StringBuilder str = new StringBuilder();
+            if (hats.Count <= 0)
+            {
+                str.AppendLine($"No {Title} installed");
+                return str.ToString();
+            }
             double mathstuff = Convert.ToDouble(hats.Count) / 9.0;
             maxPages = Math.Ceiling(mathstuff);
             str.AppendLine("<color=yellow>==</color> Hats <color=yellow>==</color>");
