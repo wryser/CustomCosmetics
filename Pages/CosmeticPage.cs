@@ -15,12 +15,13 @@ namespace CustomCosmetics
         public override void OnPostModSetup()
         {
             selectionHandler.maxIndex = 4;
-            Plugin.instance.cosmeticsLoaded.AddListener(CosmeticsLoaded);
+            Plugin.instance.updateCosmeticPage.AddListener(UpdatePage);
         }
 
         public override string OnGetScreenContent()
         {
             StringBuilder str = new StringBuilder();
+            if (Plugin.instance.loadError) { return GetErrorContent(); }
             str.AppendLine("<color=yellow>==</color> Cosmetics <color=yellow>==</color>");
             str.AppendLines(1);
             if (Plugin.instance.assetsLoaded)
@@ -34,15 +35,24 @@ namespace CustomCosmetics
             }
             else
             {
-                selectionHandler.maxIndex = 0;
                 str.AppendLine("Loading Cosmetics!");
             }
             return str.ToString();
         }
 
-        void CosmeticsLoaded()
+        void UpdatePage()
         {
             OnGetScreenContent();
+        }
+
+        string GetErrorContent()
+        {
+            StringBuilder str = new StringBuilder();
+            str.AppendLine("<color=red>==Error When Loading==</color>");
+            str.AppendLine("");
+            str.AppendLine("There was an error when loading cosmetics.");
+            str.AppendLine("Please make sure that you only have cosmetics installed from the discord server wryser's modding cave and not from the gorilla tag modding discord");
+            return str.ToString();
         }
 
         public override void OnButtonPressed(WatchButtonType buttonType)
@@ -56,6 +66,7 @@ namespace CustomCosmetics
                     selectionHandler.MoveSelectionDown();
                     break;
                 case WatchButtonType.Enter:
+                    if(!Plugin.instance.assetsLoaded) { break; }
                     int index = selectionHandler.currentIndex;
                     if (index == 0)
                     {

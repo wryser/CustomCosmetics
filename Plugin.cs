@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Collections;
 using UnityEngine.Events;
 using BananaOS;
+using Unity.Collections.LowLevel.Unsafe;
 
 namespace CustomCosmetics
 {
@@ -55,8 +56,9 @@ namespace CustomCosmetics
         Dictionary<string, GameObject> assetCache = new Dictionary<string, GameObject>();
         Dictionary<string, GameObject> nameAssetCache = new Dictionary<string, GameObject>();
         public int prevMatIndex;
-        public UnityEvent cosmeticsLoaded = new UnityEvent();
+        public UnityEvent updateCosmeticPage;
         public bool assetsLoaded = false;
+        public bool loadError = false;
 
         // General Cosmetic Info Values
         public string cosmeticName;
@@ -90,6 +92,7 @@ namespace CustomCosmetics
             if (scene.name == "GorillaTag")
             {
                 /* Code here runs after the game initializes (i.e. GorillaLocomotion.Player.Instance != null) */
+                updateCosmeticPage = new UnityEvent();
                 currentTaggedMaterial.mat = null;
                 currentMaterial.mat = null;
                 removeCosmetics = Config.Bind("Settings", "Remove Cosmetics", false, "Whether the mod should unequip normal cosmetics when equipping custom ones.");
@@ -135,7 +138,7 @@ namespace CustomCosmetics
             {
                 Debug.Log("Loading Custom Cosmetics");
                 GameObject cosmeticsParent = new GameObject("CustomCosmetics");
-                foreach (string hat in Directory.GetFiles(cosmeticPath + "/Hats/"))
+                foreach (string hat in Directory.GetFiles(cosmeticPath + "/Hats/", "*.hat"))
                 {
                     AssetBundle hatbundle = await LoadBundle(hat);
                     GameObject temphat = hatbundle.LoadAsset<GameObject>("hat");
@@ -145,7 +148,7 @@ namespace CustomCosmetics
                     string hatname = GetCosName(temphat, "Hat");
                     nameAssetCache.Add(hatname, temphat);
                 }
-                foreach (string holdable in Directory.GetFiles(cosmeticPath + "/Holdables/"))
+                foreach (string holdable in Directory.GetFiles(cosmeticPath + "/Holdables/", "*.holdable"))
                 {
                     AssetBundle holdablebundle = await LoadBundle(holdable);
                     GameObject tempholdable = holdablebundle.LoadAsset<GameObject>("holdABLE");
@@ -155,7 +158,7 @@ namespace CustomCosmetics
                     string holdablename = GetCosName(tempholdable, "Holdable");
                     nameAssetCache.Add(holdablename, tempholdable);
                 }
-                foreach (string badge in Directory.GetFiles(cosmeticPath + "/Badges/"))
+                foreach (string badge in Directory.GetFiles(cosmeticPath + "/Badges/", "*.badge"))
                 {
                     AssetBundle badgebundle = await LoadBundle(badge);
                     GameObject tempbadge = badgebundle.LoadAsset<GameObject>("badge");
@@ -165,7 +168,7 @@ namespace CustomCosmetics
                     string badgename = GetCosName(tempbadge, "Badge");
                     nameAssetCache.Add(badgename, tempbadge);
                 }
-                foreach (string material in Directory.GetFiles(cosmeticPath + "/Materials/"))
+                foreach (string material in Directory.GetFiles(cosmeticPath + "/Materials/", "*.material"))
                 {
                     AssetBundle materialbundle = await LoadBundle(material);
                     GameObject tempmaterial = materialbundle.LoadAsset<GameObject>("material");
@@ -212,12 +215,16 @@ namespace CustomCosmetics
                     GetInfo(savedtagmaterial, "Material");
                     LoadMaterial(cosmeticPath + "/Materials/" + savedtagmaterial, 2);
                 }
-                cosmeticsLoaded.Invoke();
                 assetsLoaded = true;
+                updateCosmeticPage.Invoke();
+                BananaNotifications.DisplayNotification("<align=center><size=2><b>Finished Loading Custom Cosmetics!\n Have Fun!</b></size></align>", new Color(0.424f, 0.086f, 0.839f, 1f), Color.white, 2f);
             }
             catch(Exception ex)
             {
                 Debug.LogError(ex.ToString());
+                loadError = true;
+                updateCosmeticPage.Invoke();
+                BananaNotifications.DisplayErrorNotification("Error when loading Custom Cosmetics\n Please DM wryser on discord", 5f);
             }
             Debug.Log("Finished Loading Custom Cosmetics");
             var table = PhotonNetwork.LocalPlayer.CustomProperties;
@@ -967,11 +974,11 @@ namespace CustomCosmetics
                         currentTaggedMaterial.mat = parentAsset.GetComponent<MeshRenderer>().material;
                         if (usingTextMethod)
                         {
-                            currentMaterial.customColours = materialCustomColours;
+                            currentTaggedMaterial.customColours = materialCustomColours;
                         }
                         else
                         {
-                            currentMaterial.customColours = matDes.customColors;
+                            currentTaggedMaterial.customColours = matDes.customColors;
                         }
                         VRRig rig = GorillaTagger.Instance.offlineVRRig;
                         if (currentTaggedMaterial.customColours)
