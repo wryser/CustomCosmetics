@@ -15,7 +15,6 @@ namespace CustomCosmetics
         public override void OnPostModSetup()
         {
             selectionHandler.maxIndex = 4;
-            Plugin.instance.updateCosmeticPage.AddListener(UpdatePage);
         }
 
         public override string OnGetScreenContent()
@@ -38,11 +37,6 @@ namespace CustomCosmetics
                 str.AppendLine("Loading Cosmetics!");
             }
             return str.ToString();
-        }
-
-        void UpdatePage()
-        {
-            OnGetScreenContent();
         }
 
         string GetErrorContent()

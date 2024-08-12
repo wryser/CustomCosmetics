@@ -56,7 +56,6 @@ namespace CustomCosmetics
         Dictionary<string, GameObject> assetCache = new Dictionary<string, GameObject>();
         Dictionary<string, GameObject> nameAssetCache = new Dictionary<string, GameObject>();
         public int prevMatIndex;
-        public UnityEvent updateCosmeticPage;
         public bool assetsLoaded = false;
         public bool loadError = false;
 
@@ -92,7 +91,6 @@ namespace CustomCosmetics
             if (scene.name == "GorillaTag")
             {
                 /* Code here runs after the game initializes (i.e. GorillaLocomotion.Player.Instance != null) */
-                updateCosmeticPage = new UnityEvent();
                 currentTaggedMaterial.mat = null;
                 currentMaterial.mat = null;
                 removeCosmetics = Config.Bind("Settings", "Remove Cosmetics", false, "Whether the mod should unequip normal cosmetics when equipping custom ones.");
@@ -216,20 +214,17 @@ namespace CustomCosmetics
                     LoadMaterial(cosmeticPath + "/Materials/" + savedtagmaterial, 2);
                 }
                 assetsLoaded = true;
-                updateCosmeticPage.Invoke();
+                MonkeWatch.Instance.UpdateScreen();
                 BananaNotifications.DisplayNotification("<align=center><size=2><b>Finished Loading Custom Cosmetics!\n Have Fun!</b></size></align>", new Color(0.424f, 0.086f, 0.839f, 1f), Color.white, 2f);
             }
             catch(Exception ex)
             {
                 Debug.LogError(ex.ToString());
                 loadError = true;
-                updateCosmeticPage.Invoke();
+                MonkeWatch.Instance.UpdateScreen();
                 BananaNotifications.DisplayErrorNotification("Error when loading Custom Cosmetics\n Please DM wryser on discord", 5f);
             }
             Debug.Log("Finished Loading Custom Cosmetics");
-            var table = PhotonNetwork.LocalPlayer.CustomProperties;
-            table.AddOrUpdate("Colour", GorillaTagger.Instance.offlineVRRig.playerColor.ToString());
-            PhotonNetwork.LocalPlayer.SetCustomProperties(table);
         }
 
         public void LoadHoldable(string file, bool lHand)
@@ -495,6 +490,12 @@ namespace CustomCosmetics
                         cosmeticsplayers.Add(playerRig, playerr);
                         SetCosmetics(playerRig, props, playerr);
                     }
+                }
+                else
+                {
+                    var table = PhotonNetwork.LocalPlayer.CustomProperties;
+                    table.AddOrUpdate("Colour", GorillaTagger.Instance.offlineVRRig.playerColor.ToString());
+                    PhotonNetwork.LocalPlayer.SetCustomProperties(table);
                 }
             }
             catch (Exception e)
