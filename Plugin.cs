@@ -16,6 +16,7 @@ using System.Collections;
 using UnityEngine.Events;
 using BananaOS;
 using Unity.Collections.LowLevel.Unsafe;
+using System.Text;
 
 namespace CustomCosmetics
 {
@@ -58,6 +59,8 @@ namespace CustomCosmetics
         public int prevMatIndex;
         public bool assetsLoaded = false;
         public bool loadError = false;
+        public StringBuilder errorText;
+        public string brokenCosmetic;
 
         // General Cosmetic Info Values
         public string cosmeticName;
@@ -132,12 +135,15 @@ namespace CustomCosmetics
 
         public async Task LoadAssets()
         {
+            string currentCosmeticLoading = "null";
+            loadError = false;
             try
             {
                 Debug.Log("Loading Custom Cosmetics");
                 GameObject cosmeticsParent = new GameObject("CustomCosmetics");
                 foreach (string hat in Directory.GetFiles(cosmeticPath + "/Hats/", "*.hat"))
                 {
+                    currentCosmeticLoading = hat;
                     AssetBundle hatbundle = await LoadBundle(hat);
                     GameObject temphat = hatbundle.LoadAsset<GameObject>("hat");
                     temphat.transform.SetParent(cosmeticsParent.transform);
@@ -148,6 +154,7 @@ namespace CustomCosmetics
                 }
                 foreach (string holdable in Directory.GetFiles(cosmeticPath + "/Holdables/", "*.holdable"))
                 {
+                    currentCosmeticLoading = holdable;
                     AssetBundle holdablebundle = await LoadBundle(holdable);
                     GameObject tempholdable = holdablebundle.LoadAsset<GameObject>("holdABLE");
                     tempholdable.transform.SetParent(cosmeticsParent.transform);
@@ -158,6 +165,7 @@ namespace CustomCosmetics
                 }
                 foreach (string badge in Directory.GetFiles(cosmeticPath + "/Badges/", "*.badge"))
                 {
+                    currentCosmeticLoading = badge;
                     AssetBundle badgebundle = await LoadBundle(badge);
                     GameObject tempbadge = badgebundle.LoadAsset<GameObject>("badge");
                     tempbadge.transform.SetParent(cosmeticsParent.transform);
@@ -168,6 +176,7 @@ namespace CustomCosmetics
                 }
                 foreach (string material in Directory.GetFiles(cosmeticPath + "/Materials/", "*.material"))
                 {
+                    currentCosmeticLoading = material;
                     AssetBundle materialbundle = await LoadBundle(material);
                     GameObject tempmaterial = materialbundle.LoadAsset<GameObject>("material");
                     tempmaterial.transform.SetParent(cosmeticsParent.transform);
@@ -216,15 +225,27 @@ namespace CustomCosmetics
                 assetsLoaded = true;
                 MonkeWatch.Instance.UpdateScreen();
                 BananaNotifications.DisplayNotification("<align=center><size=2><b>Finished Loading Custom Cosmetics!\n Have Fun!</b></size></align>", new Color(0.424f, 0.086f, 0.839f, 1f), Color.white, 2f);
+                Debug.Log("Finished Loading Custom Cosmetics");
             }
             catch(Exception ex)
             {
-                Debug.LogError(ex.ToString());
+                brokenCosmetic = currentCosmeticLoading;
+                Debug.Log("Issue when loading CustomCosmetics");
+                StringBuilder str = new StringBuilder();
+                str.AppendLine("<color=red>==Error When Loading==</color>");
+                str.AppendLine("");
+                str.AppendLine("There was an error when loading cosmetics.");
+                str.AppendLine($"You have a broken cosmetic installed, \nplease click enter to delete cosmetic {Path.GetFileName(currentCosmeticLoading)} and reload the mod");
+                errorText = str;
+                assetCache.Clear();
+                nameAssetCache.Clear();
+
+                Debug.LogError(ex.Message);
                 loadError = true;
                 MonkeWatch.Instance.UpdateScreen();
-                BananaNotifications.DisplayErrorNotification("Error when loading Custom Cosmetics\n Please DM wryser on discord", 5f);
+                BananaNotifications.DisplayErrorNotification("<align=center><size=2><b>Error when loading Custom Cosmetics\n Please check the Cosmetics page on the watch for more info</b></size></align>", 5f);
             }
-            Debug.Log("Finished Loading Custom Cosmetics");
+            
         }
 
         public void LoadHoldable(string file, bool lHand)

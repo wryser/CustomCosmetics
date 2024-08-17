@@ -2,6 +2,7 @@
 using BananaOS.Pages;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace CustomCosmetics
@@ -20,7 +21,15 @@ namespace CustomCosmetics
         public override string OnGetScreenContent()
         {
             StringBuilder str = new StringBuilder();
-            if (Plugin.instance.loadError) { return GetErrorContent(); }
+            if (Plugin.instance.loadError)
+            {
+                selectionHandler.maxIndex = 0;
+                str.Append(Plugin.instance.errorText.ToString());
+                str.AppendLine("");
+                str.AppendLine(selectionHandler.GetOriginalBananaOSSelectionText(0, "Delete"));
+                selectionHandler.currentIndex = 0;
+                return str.ToString();
+            }
             str.AppendLine("<color=yellow>==</color> Cosmetics <color=yellow>==</color>");
             str.AppendLines(1);
             if (Plugin.instance.assetsLoaded)
@@ -39,16 +48,6 @@ namespace CustomCosmetics
             return str.ToString();
         }
 
-        string GetErrorContent()
-        {
-            StringBuilder str = new StringBuilder();
-            str.AppendLine("<color=red>==Error When Loading==</color>");
-            str.AppendLine("");
-            str.AppendLine("There was an error when loading cosmetics.");
-            str.AppendLine("Please make sure that you only have cosmetics installed from the discord server wryser's modding cave and not from the gorilla tag modding discord");
-            return str.ToString();
-        }
-
         public override void OnButtonPressed(WatchButtonType buttonType)
         {
             switch (buttonType)
@@ -60,11 +59,19 @@ namespace CustomCosmetics
                     selectionHandler.MoveSelectionDown();
                     break;
                 case WatchButtonType.Enter:
-                    if(!Plugin.instance.assetsLoaded) { break; }
                     int index = selectionHandler.currentIndex;
                     if (index == 0)
                     {
-                        SwitchToPage(typeof(HoldablePage));
+                        if (Plugin.instance.loadError)
+                        {
+                            File.Delete(Plugin.instance.brokenCosmetic);
+                            Plugin.instance.LoadAssets();
+                            OnGetScreenContent();
+                        }
+                        else
+                        {
+                            SwitchToPage(typeof(HoldablePage));
+                        }
                     }
                     else if(index == 1)
                     {
