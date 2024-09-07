@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using static CustomCosmetics.Extensions.InfoLoader;
 
 namespace CustomCosmetics
 {
@@ -115,7 +116,7 @@ namespace CustomCosmetics
                     selectionHandler.currentIndex = 0;
                     break;
                 case WatchButtonType.Enter:
-                    Plugin.instance.GetInfo(Path.GetFileName(hats[currentSelected]), "Hat");
+                    GetInfo(Path.GetFileName(hats[currentSelected]), "Hat");
                     SwitchToPage(typeof(HatLoadPage));
                     break;
                 case WatchButtonType.Back:

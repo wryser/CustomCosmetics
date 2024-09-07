@@ -4,8 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using UnityEngine;
-using static UnityEngine.EventSystems.EventTrigger;
+using static CustomCosmetics.Extensions.InfoLoader;
 
 namespace CustomCosmetics
 {
@@ -119,7 +118,7 @@ namespace CustomCosmetics
                     selectionHandler.currentIndex = 0;
                     break;
                 case WatchButtonType.Enter:
-                    Plugin.instance.GetInfo(Path.GetFileName(holdables[currentSelected]), "Holdable");
+                    GetInfo(Path.GetFileName(holdables[currentSelected]), "Holdable");
                     SwitchToPage(typeof(HoldableLoadPage));
                     break;
                 case WatchButtonType.Back:

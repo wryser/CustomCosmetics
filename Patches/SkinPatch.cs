@@ -3,6 +3,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static CustomCosmetics.Networking.NetworkingBehaviours;
 
 namespace CustomCosmetics.Patches
 {
@@ -23,7 +24,7 @@ namespace CustomCosmetics.Patches
                 }
                 else if(useDefaultBodySkin)
                 {
-                    Plugin.instance.EnableNetworkMaterial(rig);
+                    EnableNetworkMaterial(rig);
                 }
             }
             catch(Exception e)

@@ -12,11 +12,13 @@ using GorillaNetworking;
 using HarmonyLib;
 using CustomCosmetics.Patches;
 using System.Threading.Tasks;
-using System.Collections;
-using UnityEngine.Events;
 using BananaOS;
-using Unity.Collections.LowLevel.Unsafe;
 using System.Text;
+using static CustomCosmetics.Extensions.ColorExtensions;
+using static CustomCosmetics.Networking.NetworkingBehaviours;
+using static CustomCosmetics.Extensions.AssetLoader;
+using static CustomCosmetics.Extensions.InfoLoader;
+using UnityEngine.Networking;
 
 namespace CustomCosmetics
 {
@@ -28,18 +30,6 @@ namespace CustomCosmetics
     public class Plugin : BaseUnityPlugin
     {
         public static Plugin instance;
-        GameObject currentRHoldable;
-        GameObject currentLHoldable;
-        GameObject currentHat;
-        GameObject currentBadge;
-        struct customMaterial
-        {
-            public Material mat;
-            public bool customColours;
-        }
-        customMaterial currentMaterial = new customMaterial();
-        customMaterial currentTaggedMaterial = new customMaterial();
-        Material defaultTaggedMaterial;
         public string cosmeticPath = Path.Combine(Path.GetDirectoryName(typeof(Plugin).Assembly.Location), "Cosmetics");
         public ConfigEntry<string> hat;
         public ConfigEntry<string> Lholdable;
@@ -48,19 +38,13 @@ namespace CustomCosmetics
         public ConfigEntry<string> material;
         public ConfigEntry<string> taggedMaterial;
         public ConfigEntry<bool> removeCosmetics;
-        Dictionary<Photon.Realtime.Player, GameObject> networkHats = new Dictionary<Photon.Realtime.Player, GameObject>();
-        Dictionary<Photon.Realtime.Player, GameObject> networkRHoldables = new Dictionary<Photon.Realtime.Player, GameObject>();
-        Dictionary<Photon.Realtime.Player, GameObject> networkLHoldables = new Dictionary<Photon.Realtime.Player, GameObject>();
-        Dictionary<Photon.Realtime.Player, GameObject> networkBadges = new Dictionary<Photon.Realtime.Player, GameObject>();
-        Dictionary<VRRig, Photon.Realtime.Player> cosmeticsplayers = new Dictionary<VRRig, Photon.Realtime.Player>();
         Dictionary<VRRig, Photon.Realtime.Player> normalplayers = new Dictionary<VRRig, Photon.Realtime.Player>();
-        Dictionary<string, GameObject> assetCache = new Dictionary<string, GameObject>();
-        Dictionary<string, GameObject> nameAssetCache = new Dictionary<string, GameObject>();
         public int prevMatIndex;
         public bool assetsLoaded = false;
         public bool loadError = false;
         public StringBuilder errorText;
         public string brokenCosmetic;
+        public bool correctVersion = true;
 
         // General Cosmetic Info Values
         public string cosmeticName;
@@ -89,52 +73,90 @@ namespace CustomCosmetics
             instance = this;
         }
 
+        System.Collections.IEnumerator checkVersion()
+        {
+            UnityWebRequest www = UnityWebRequest.Get("https://pastebin.com/raw/qnFzYzRx");
+            yield return www.SendWebRequest();
+
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                string[] info = www.downloadHandler.text.Split("$");
+                Debug.Log($"Version is: {info[0]} Discord link is: {info[1]}");
+                Debug.Log("Got Version!");
+                if (info[0] != PluginInfo.Version)
+                {
+                    BananaNotifications.DisplayErrorNotification("<align=center><size=2><b>You are on an old version of Custom Cosmetics\nPlease check the watch page for more info</b></size></align>", 5f);
+                    Debug.Log("Incorrect Version");
+                    StringBuilder str = new StringBuilder();
+                    str.AppendLine("<color=red>==Wrong Version==</color>");
+                    str.AppendLine("");
+                    str.AppendLine("You are on an old version of Custom Cosmetics");
+                    str.AppendLine($"Your Version: {PluginInfo.Version}\nLatest Version: {info[0]}\n\nPlease download the latest version of the mod from the discord:\n{info[1]}");
+                    errorText = str;
+                    assetCache.Clear();
+                    nameAssetCache.Clear();
+                    correctVersion = false;
+                    MonkeWatch.Instance.UpdateScreen();
+                }
+                else
+                {
+                    correctVersion = true;
+                }
+            }
+        }
+
         void GameInitialized(Scene scene, LoadSceneMode loadMode)
         {
-            if (scene.name == "GorillaTag")
+            StartCoroutine(checkVersion());
+            currentTaggedMaterial.mat = null;
+            currentMaterial.mat = null;
+            removeCosmetics = Config.Bind("Settings", "Remove Cosmetics", false, "Whether the mod should unequip normal cosmetics when equipping custom ones.");
+            hat = Config.Bind("Cosmetics", "Current Hat", "", "This is the current hat your using.");
+            Lholdable = Config.Bind("Cosmetics", "Current Left Holdable", "", "This is the current left holdable your using.");
+            Rholdable = Config.Bind("Cosmetics", "Current Right Holdable", "", "This is the current right holdable your using.");
+            badge = Config.Bind("Cosmetics", "Current Badge", "", "This is the current badge your using.");
+            material = Config.Bind("Cosmetics", "Current Material", "", "This is the current material your using.");
+            taggedMaterial = Config.Bind("Cosmetics", "Current Tagged Material", "", "This is the current tagged material your using.");
+            if (!Directory.Exists(cosmeticPath))
             {
-                /* Code here runs after the game initializes (i.e. GorillaLocomotion.Player.Instance != null) */
-                currentTaggedMaterial.mat = null;
-                currentMaterial.mat = null;
-                removeCosmetics = Config.Bind("Settings", "Remove Cosmetics", false, "Whether the mod should unequip normal cosmetics when equipping custom ones.");
-                hat = Config.Bind("Cosmetics", "Current Hat", "", "This is the current hat your using.");
-                Lholdable = Config.Bind("Cosmetics", "Current Left Holdable", "", "This is the current left holdable your using.");
-                Rholdable = Config.Bind("Cosmetics", "Current Right Holdable", "", "This is the current right holdable your using.");
-                badge = Config.Bind("Cosmetics", "Current Badge", "", "This is the current badge your using.");
-                material = Config.Bind("Cosmetics", "Current Material", "", "This is the current material your using.");
-                taggedMaterial = Config.Bind("Cosmetics", "Current Tagged Material", "", "This is the current tagged material your using.");
-                if (!Directory.Exists(cosmeticPath))
-                {
-                    Directory.CreateDirectory(cosmeticPath);
-                }
-                if (!Directory.Exists(cosmeticPath + "/Hats"))
-                {
-                    Directory.CreateDirectory(cosmeticPath + "/Hats");
-                }
-                if (!Directory.Exists(cosmeticPath + "/Holdables"))
-                {
-                    Directory.CreateDirectory(cosmeticPath + "/Holdables");
-                }
-                if (!Directory.Exists(cosmeticPath + "/Badges"))
-                {
-                    Directory.CreateDirectory(cosmeticPath + "/Badges");
-                }
-                if (!Directory.Exists(cosmeticPath + "/Materials"))
-                {
-                    Directory.CreateDirectory(cosmeticPath + "/Materials");
-                }
-                this.AddComponent<Net>();
-                Harmony harmony = Harmony.CreateAndPatchAll(typeof(Plugin).Assembly, PluginInfo.GUID);
-                Type rigCache = typeof(GorillaTagger).Assembly.GetType("VRRigCache");
-                harmony.Patch(AccessTools.Method(rigCache, "AddRigToGorillaParent"), postfix: new HarmonyMethod(typeof(RigJoinPatch), nameof(RigJoinPatch.Patch)));
-                harmony.Patch(AccessTools.Method(rigCache, "RemoveRigFromGorillaParent"), prefix: new HarmonyMethod(typeof(RigLeavePatch), nameof(RigLeavePatch.Patch)));
-                GorillaTagger.Instance.offlineVRRig.OnColorChanged += UpdateColour;
-                LoadAssets();
+                Directory.CreateDirectory(cosmeticPath);
             }
+            if (!Directory.Exists(cosmeticPath + "/Hats"))
+            {
+                Directory.CreateDirectory(cosmeticPath + "/Hats");
+            }
+            if (!Directory.Exists(cosmeticPath + "/Holdables"))
+            {
+                Directory.CreateDirectory(cosmeticPath + "/Holdables");
+            }
+            if (!Directory.Exists(cosmeticPath + "/Badges"))
+            {
+                Directory.CreateDirectory(cosmeticPath + "/Badges");
+            }
+            if (!Directory.Exists(cosmeticPath + "/Materials"))
+            {
+                Directory.CreateDirectory(cosmeticPath + "/Materials");
+            }
+            this.AddComponent<Net>();
+            Harmony harmony = Harmony.CreateAndPatchAll(typeof(Plugin).Assembly, PluginInfo.GUID);
+            Type rigCache = typeof(GorillaTagger).Assembly.GetType("VRRigCache");
+            harmony.Patch(AccessTools.Method(rigCache, "AddRigToGorillaParent"), postfix: new HarmonyMethod(typeof(RigJoinPatch), nameof(RigJoinPatch.Patch)));
+            harmony.Patch(AccessTools.Method(rigCache, "RemoveRigFromGorillaParent"), prefix: new HarmonyMethod(typeof(RigLeavePatch), nameof(RigLeavePatch.Patch)));
+            GorillaTagger.Instance.offlineVRRig.OnColorChanged += UpdateColour;
+
+            LoadAssets();
         }
 
         public async Task LoadAssets()
         {
+            if(correctVersion != true)
+            {
+                return;
+            }
             string currentCosmeticLoading = "null";
             loadError = false;
             try
@@ -502,8 +524,8 @@ namespace CustomCosmetics
             {
                 if (!playerRig.isLocal)
                 {
-                    ExitGames.Client.Photon.Hashtable props = PhotonNetwork.CurrentRoom.GetPlayer(player.ID).CustomProperties;
-                    Photon.Realtime.Player playerr = PhotonNetwork.CurrentRoom.GetPlayer(player.ID);
+                    ExitGames.Client.Photon.Hashtable props = PhotonNetwork.CurrentRoom.GetPlayer(player.ActorNumber).CustomProperties;
+                    Photon.Realtime.Player playerr = PhotonNetwork.CurrentRoom.GetPlayer(player.ActorNumber);
                     normalplayers.Add(playerRig, playerr);
                     Debug.Log($"{player.NickName} entered the room");
                     if (props.TryGetValue("CustomHat", out object hat) || props.TryGetValue("CustomLHoldable", out object hold) || props.TryGetValue("CustomRHoldable", out object rhold) || props.TryGetValue("CustomBadge", out object badge) || props.TryGetValue("CustomMaterial", out object material) || props.TryGetValue("CustomTagMaterial", out object tagmaterial))
@@ -589,7 +611,6 @@ namespace CustomCosmetics
             {
                 if (props.TryGetValue("CustomHat", out object test))
                 {
-                    Debug.Log($"{playerr.NickName} is using Custom Cosmetics, hat is: {test.ToString()}");
                     if (nameAssetCache.TryGetValue(test.ToString(), out GameObject hat))
                     {
                         LoadNetworkHat(test.ToString(), playerRig, playerr);
@@ -597,7 +618,6 @@ namespace CustomCosmetics
                 }
                 if (props.TryGetValue("CustomRHoldable", out object r))
                 {
-                    Debug.Log($"{playerr.NickName} is using Custom Cosmetics, holdable is: {r.ToString()}");
                     if(nameAssetCache.TryGetValue(r.ToString(), out GameObject rholdable))
                     {
                         LoadNetworkHoldable(r.ToString(), playerRig, playerr, false);
@@ -605,7 +625,6 @@ namespace CustomCosmetics
                 }
                 if (props.TryGetValue("CustomLHoldable", out object l))
                 {
-                    Debug.Log($"{playerr.NickName} is using Custom Cosmetics, holdable is: {l.ToString()}");
                     if (nameAssetCache.TryGetValue(l.ToString(), out GameObject lholdable))
                     {
                         LoadNetworkHoldable(l.ToString(), playerRig, playerr, true);
@@ -613,7 +632,6 @@ namespace CustomCosmetics
                 }
                 if (props.TryGetValue("CustomBadge", out object testtt))
                 {
-                    Debug.Log($"{playerr.NickName} is using Custom Cosmetics, badge is: {testtt.ToString()}");
                     if (nameAssetCache.TryGetValue(testtt.ToString(), out GameObject badge))
                     {
                         LoadNetworkBadge(testtt.ToString(), playerRig, playerr);
@@ -621,7 +639,6 @@ namespace CustomCosmetics
                 }
                 if (props.TryGetValue("CustomMaterial", out object testttt))
                 {
-                    Debug.Log($"{playerr.NickName} is using Custom Cosmetics, material is: {testttt.ToString()}");
                     if (nameAssetCache.TryGetValue(testttt.ToString(), out GameObject mat))
                     {
                         props.TryGetValue("Colour", out object color);
@@ -631,7 +648,6 @@ namespace CustomCosmetics
                 }
                 if (props.TryGetValue("CustomTagMaterial", out object tagmat))
                 {
-                    Debug.Log($"{playerr.NickName} is using Custom Cosmetics, tagged material is: {tagmat.ToString()}");
                     if (nameAssetCache.TryGetValue(tagmat.ToString(), out GameObject taggmat))
                     {
                         props.TryGetValue("Colour", out object co);
@@ -640,196 +656,6 @@ namespace CustomCosmetics
                     }
                 }
             }
-            else if (playerRig == null)
-            {
-                Debug.Log("rig is null uh oh");
-            }
-            else if (playerRig.playerText.gameObject == null)
-            {
-                Debug.Log("text is null this is not sigma but its fine");
-            }
-        }
-
-        public void LoadNetworkHat(string file, VRRig rig, Photon.Realtime.Player player)
-        {
-            if (file != "")
-            {
-                GameObject asset;
-                nameAssetCache.TryGetValue(file, out asset);
-                GameObject prefab = Instantiate(asset);
-                if (prefab != null)
-                {
-                    var parentAsset = prefab;
-                    foreach (Collider collider in parentAsset.GetComponentsInChildren<Collider>())
-                    {
-                        Destroy(collider);
-                    }
-                    networkHats.Add(player, parentAsset);
-                    parentAsset.transform.SetParent(rig.transform.Find("rig/body/head/"), false);
-                }
-            }
-        }
-        public void LoadNetworkHoldable(string file, VRRig rig, Photon.Realtime.Player player, bool lHand)
-        {
-            try
-            {
-                if (file != "")
-                {
-                    GameObject asset;
-                    nameAssetCache.TryGetValue(file, out asset);
-                    GameObject prefab = Instantiate(asset);
-                    if (prefab != null)
-                    {
-                        var parentAsset = prefab;
-                        foreach (Collider collider in parentAsset.GetComponentsInChildren<Collider>())
-                        {
-                            Destroy(collider);
-                        }
-                        if(parentAsset.TryGetComponent<Text>(out var text))
-                        {
-                            if (!lHand)
-                            {
-                                parentAsset.transform.SetParent(rig.transform.Find("rig/body/shoulder.R/upper_arm.R/forearm.R/hand.R/palm.01.R/"), false);
-                                networkRHoldables.Add(player, parentAsset);
-                            }
-                            else if (lHand)
-                            {
-                                parentAsset.transform.SetParent(rig.transform.Find("rig/body/shoulder.L/upper_arm.L/forearm.L/hand.L/palm.01.L/"), false);
-                                networkLHoldables.Add(player, parentAsset);
-                            }
-                        }
-                        else
-                        {
-                            if (!lHand)
-                            {
-                                GameObject rHoldable = Instantiate(parentAsset.GetComponent<HoldableDescriptor>().rightHandObject);
-                                rHoldable.transform.SetParent(rig.transform.Find("rig/body/shoulder.R/upper_arm.R/forearm.R/hand.R/palm.01.R/"), false);
-                                networkRHoldables.Add(player, rHoldable);
-                            }
-                            else if (lHand)
-                            {
-                                GameObject lHoldable = Instantiate(parentAsset.GetComponent<HoldableDescriptor>().leftHandObject);
-                                lHoldable.transform.SetParent(rig.transform.Find("rig/body/shoulder.L/upper_arm.L/forearm.L/hand.L/palm.01.L/"), false);
-                                networkLHoldables.Add(player, lHoldable);
-                            }
-                            Destroy(parentAsset);
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.Log(e.Message);
-            }
-        }
-        public void LoadNetworkBadge(string file, VRRig rig, Photon.Realtime.Player player)
-        {
-            if (file != "")
-            {
-                GameObject asset;
-                nameAssetCache.TryGetValue(file, out asset);
-                GameObject prefab = Instantiate(asset);
-                if (prefab != null)
-                {
-                    var parentAsset = prefab;
-                    foreach (Collider collider in parentAsset.GetComponentsInChildren<Collider>())
-                    {
-                        Destroy(collider);
-                    }
-                    parentAsset.transform.SetParent(rig.transform.Find("rig/body/"), false);
-                    networkBadges.Add(player, parentAsset);
-                }
-            }
-        }
-        public void LoadNetworkMaterial(string file, int materialIndex, VRRig rig, Photon.Realtime.Player player, Color colour)
-        {
-            if (file != "")
-            {
-                GameObject asset;
-                nameAssetCache.TryGetValue(file, out asset);
-                GameObject prefab = Instantiate(asset);
-                if (prefab != null)
-                {
-                    var parentAsset = prefab;
-                    try
-                    {
-                        if (materialIndex == 0)
-                        {
-                            MaterialDescriptor matInfo = parentAsset.GetComponent<MaterialDescriptor>();
-                            if (matInfo.customColors)
-                            {
-                                parentAsset.GetComponent<MeshRenderer>().material.color = rig.playerColor;
-                            }
-                            rig.materialsToChangeTo[0] = parentAsset.GetComponent<MeshRenderer>().material;
-                            Material[] sharedMaterials = rig.mainSkin.sharedMaterials;
-                            sharedMaterials[0] = rig.materialsToChangeTo[rig.setMatIndex];
-                            sharedMaterials[1] = rig.defaultSkin.chestMaterial;
-                            rig.mainSkin.sharedMaterials = sharedMaterials;
-                        }
-                        else if (materialIndex == 2)
-                        {
-                            MaterialDescriptor matInfo = parentAsset.GetComponent<MaterialDescriptor>();
-                            rig.materialsToChangeTo[materialIndex] = parentAsset.GetComponent<MeshRenderer>().material;
-                            Material[] sharedMaterials = rig.mainSkin.sharedMaterials;
-                            sharedMaterials[0] = rig.materialsToChangeTo[rig.setMatIndex];
-                            sharedMaterials[1] = rig.defaultSkin.chestMaterial;
-                            rig.mainSkin.sharedMaterials = sharedMaterials;
-                        }
-                        else
-                        {
-                            rig.materialsToChangeTo[materialIndex] = currentTaggedMaterial.mat;
-                        }
-                        Destroy(parentAsset);
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.LogException(ex);
-                    }
-                }
-            }
-            else
-            {
-                if (materialIndex == 0)
-                {
-                    rig.materialsToChangeTo[materialIndex] = rig.myDefaultSkinMaterialInstance;
-                    Material[] sharedMaterials = rig.mainSkin.sharedMaterials;
-                    sharedMaterials[0] = rig.materialsToChangeTo[rig.setMatIndex];
-                    sharedMaterials[1] = rig.defaultSkin.chestMaterial;
-                    rig.mainSkin.sharedMaterials = sharedMaterials;
-                }
-                else if (materialIndex == 2)
-                {
-                    rig.materialsToChangeTo[materialIndex] = defaultTaggedMaterial;
-                    Material[] sharedMaterials = rig.mainSkin.sharedMaterials;
-                    sharedMaterials[0] = rig.materialsToChangeTo[rig.setMatIndex];
-                    sharedMaterials[1] = rig.defaultSkin.chestMaterial;
-                    rig.mainSkin.sharedMaterials = sharedMaterials;
-                }
-            }
-        }
-
-        public async Task<AssetBundle> LoadBundle(string file)
-        {
-            var bundleLoadRequest = AssetBundle.LoadFromFileAsync(file);
-
-            // AssetBundleCreateRequest is a YieldInstruction !!
-            await Yield(bundleLoadRequest);
-
-            AssetBundle _storedBundle = bundleLoadRequest.assetBundle;
-            return _storedBundle;
-        }
-
-        async Task Yield(YieldInstruction instruction)
-        {
-            var completionSource = new TaskCompletionSource<YieldInstruction>();
-            StartCoroutine(AwaitInstructionCorouutine(instruction, completionSource));
-            await completionSource.Task;
-        }
-
-        IEnumerator AwaitInstructionCorouutine(YieldInstruction instruction, TaskCompletionSource<YieldInstruction> completionSource)
-        {
-            yield return instruction;
-            completionSource.SetResult(instruction);
         }
 
         public void CheckItems()
@@ -892,20 +718,6 @@ namespace CustomCosmetics
             catch (Exception e)
             {
                 Debug.LogError($"Failed to remove game cosmetic\n{e.GetType().Name} ({e.Message})");
-            }
-        }
-
-        class Net : MonoBehaviourPunCallbacks
-        {
-            public override void OnPlayerPropertiesUpdate(Photon.Realtime.Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps)
-            {
-                base.OnPlayerPropertiesUpdate(targetPlayer, changedProps);
-
-                if (targetPlayer.IsLocal) return;
-
-                NetPlayer player = NetworkSystem.Instance.GetPlayer(targetPlayer.ActorNumber);
-                Plugin.instance.RemoveCosmetics(changedProps, GorillaGameManager.instance.FindPlayerVRRig(targetPlayer), targetPlayer);
-                Plugin.instance.SetCosmetics(GorillaGameManager.instance.FindPlayerVRRig(targetPlayer), changedProps, targetPlayer);
             }
         }
 
@@ -1078,7 +890,10 @@ namespace CustomCosmetics
         public void EnableMaterial()
         {
             VRRig rig = GorillaTagger.Instance.offlineVRRig;
-            currentMaterial.mat.color = rig.playerColor;
+            if (currentMaterial.customColours)
+            {
+                currentMaterial.mat.color = rig.playerColor;
+            }
             rig.materialsToChangeTo[0] = currentMaterial.mat;
             Material[] sharedMaterials = rig.mainSkin.sharedMaterials;
             sharedMaterials[0] = rig.materialsToChangeTo[rig.setMatIndex];
@@ -1087,26 +902,6 @@ namespace CustomCosmetics
             if (currentTaggedMaterial.customColours && currentTaggedMaterial.mat != null)
             {
                 currentTaggedMaterial.mat.color = new Color(1f, 0.4f, 0f);
-            }
-        }
-
-        public void EnableNetworkMaterial(VRRig rig)
-        {
-            Photon.Realtime.Player p;
-            if(cosmeticsplayers.TryGetValue(rig, out p))
-            {
-                if (p.CustomProperties.TryGetValue("CustomMaterial", out object mat))
-                {
-                    p.CustomProperties.TryGetValue("Colour", out object co);
-                    Color col = parseColor(co.ToString());
-                    LoadNetworkMaterial(mat.ToString(), 0, rig, p, col);
-                }
-                if (p.CustomProperties.TryGetValue("CustomTagMaterial", out object tagmat))
-                {
-                    p.CustomProperties.TryGetValue("Colour", out object color);
-                    Color c = parseColor(color.ToString());
-                    LoadNetworkMaterial(tagmat.ToString(), 2, rig, p, c);
-                }
             }
         }
 
@@ -1129,103 +924,6 @@ namespace CustomCosmetics
                 rig.mainSkin.sharedMaterials = sharedMaterials;
                 
             }
-        }
-
-        public void GetInfo(string file, string mode)
-        {
-            GameObject cosmetic;
-            string[] info;
-            assetCache.TryGetValue(file, out cosmetic);
-
-            if (cosmetic.TryGetComponent(out Text values))
-            {
-                usingTextMethod = true;
-                info = values.text.Split("$");
-                switch (mode)
-                {
-                    case "Material":
-                        currentCosmeticFile = file;
-                        cosmeticName = info[0];
-                        cosmeticAuthor = info[1];
-                        cosmeticDescription = info[2];
-                        materialCustomColours = info[3].ToUpper() == "TRUE";
-                        break;
-                    case "Holdable":
-                        currentCosmeticFile = file;
-                        cosmeticName = info[0];
-                        cosmeticAuthor = info[1];
-                        cosmeticDescription = info[2];
-                        leftHand = info[3].ToUpper() == "TRUE";
-                        break;
-                    case "Badge":
-                        currentCosmeticFile = file;
-                        cosmeticName = info[0];
-                        cosmeticAuthor = info[1];
-                        cosmeticDescription = info[2];
-                        break;
-                    case "Hat":
-                        currentCosmeticFile = file;
-                        cosmeticName = info[0];
-                        cosmeticAuthor = info[1];
-                        cosmeticDescription = info[2];
-                        break;
-                }
-            }
-            else
-            {
-                usingTextMethod = false;
-                switch (mode)
-                {
-                    case "Material":
-                        currentCosmeticFile = file;
-                        matDes = cosmetic.GetComponent<MaterialDescriptor>();
-                        break;
-                    case "Holdable":
-                        currentCosmeticFile = file;
-                        holdableDes = cosmetic.GetComponent<HoldableDescriptor>();
-                        break;
-                    case "Hat":
-                        currentCosmeticFile = file;
-                        hatDes = cosmetic.GetComponent<HatDescriptor>();
-                        break;
-                    case "Badge":
-                        currentCosmeticFile = file;
-                        badgeDes = cosmetic.GetComponent<BadgeDescriptor>();
-                        break;
-                }
-            }
-        }
-        Color parseColor(string sourceString)
-        {
-            if (sourceString == null || sourceString == "" || sourceString == "$")
-            {
-                return Color.black;
-            }
-            string outString;
-            Color outColor;
-            string[] splitString;
-
-            // Trim extranious parenthesis
-            outString = sourceString.Replace("(", string.Empty);
-            outString = outString.Replace(")", string.Empty);
-            outString = outString.Replace("RGBA", string.Empty);
-
-            // Split delimted values into an array
-            splitString = outString.Split(",");
-
-            // Build new Vector3 from array elements
-            float x;
-            float y;
-            float z;
-            float.TryParse(splitString[0], out x);
-            float.TryParse(splitString[1], out y);
-            float.TryParse(splitString[2], out z);
-            outColor.r = x;
-            outColor.g = y;
-            outColor.b = z;
-            outColor.a = 1f;
-
-            return outColor;
         }
     }
 }

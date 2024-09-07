@@ -30,6 +30,13 @@ namespace CustomCosmetics
                 selectionHandler.currentIndex = 0;
                 return str.ToString();
             }
+            if (!Plugin.instance.correctVersion)
+            {
+                selectionHandler.maxIndex = 0;
+                str.Append(Plugin.instance.errorText.ToString());
+                selectionHandler.currentIndex = 0;
+                return str.ToString();
+            }
             str.AppendLine("<color=yellow>==</color> Cosmetics <color=yellow>==</color>");
             str.AppendLines(1);
             if (Plugin.instance.assetsLoaded)
@@ -53,25 +60,36 @@ namespace CustomCosmetics
             switch (buttonType)
             {
                 case WatchButtonType.Up:
-                    selectionHandler.MoveSelectionUp();
+                    if(!Plugin.instance.loadError && Plugin.instance.correctVersion)
+                    {
+                        selectionHandler.MoveSelectionUp();
+                    }
                     break;
                 case WatchButtonType.Down:
-                    selectionHandler.MoveSelectionDown();
+                    if (!Plugin.instance.loadError && Plugin.instance.correctVersion)
+                    {
+                        selectionHandler.MoveSelectionDown();
+                    }
                     break;
                 case WatchButtonType.Enter:
                     int index = selectionHandler.currentIndex;
+                    if (Plugin.instance.loadError)
+                    {
+                        File.Delete(Plugin.instance.brokenCosmetic);
+                        Plugin.instance.LoadAssets();
+                        OnGetScreenContent();
+                    }
+                    if (!Plugin.instance.assetsLoaded)
+                    {
+                        break;
+                    }
+                    if (!Plugin.instance.correctVersion)
+                    {
+                        break;
+                    }
                     if (index == 0)
                     {
-                        if (Plugin.instance.loadError)
-                        {
-                            File.Delete(Plugin.instance.brokenCosmetic);
-                            Plugin.instance.LoadAssets();
-                            OnGetScreenContent();
-                        }
-                        else
-                        {
-                            SwitchToPage(typeof(HoldablePage));
-                        }
+                        SwitchToPage(typeof(HoldablePage));
                     }
                     else if(index == 1)
                     {
