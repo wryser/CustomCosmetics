@@ -75,7 +75,7 @@ namespace CustomCosmetics
 
         System.Collections.IEnumerator checkVersion()
         {
-            UnityWebRequest www = UnityWebRequest.Get("https://pastebin.com/raw/qnFzYzRx");
+            UnityWebRequest www = UnityWebRequest.Get(PluginInfo.VersionCheck);
             yield return www.SendWebRequest();
 
             if (www.result != UnityWebRequest.Result.Success)
@@ -111,44 +111,47 @@ namespace CustomCosmetics
 
         void GameInitialized(Scene scene, LoadSceneMode loadMode)
         {
-            StartCoroutine(checkVersion());
-            currentTaggedMaterial.mat = null;
-            currentMaterial.mat = null;
-            removeCosmetics = Config.Bind("Settings", "Remove Cosmetics", false, "Whether the mod should unequip normal cosmetics when equipping custom ones.");
-            hat = Config.Bind("Cosmetics", "Current Hat", "", "This is the current hat your using.");
-            Lholdable = Config.Bind("Cosmetics", "Current Left Holdable", "", "This is the current left holdable your using.");
-            Rholdable = Config.Bind("Cosmetics", "Current Right Holdable", "", "This is the current right holdable your using.");
-            badge = Config.Bind("Cosmetics", "Current Badge", "", "This is the current badge your using.");
-            material = Config.Bind("Cosmetics", "Current Material", "", "This is the current material your using.");
-            taggedMaterial = Config.Bind("Cosmetics", "Current Tagged Material", "", "This is the current tagged material your using.");
-            if (!Directory.Exists(cosmeticPath))
+            if(scene.name == "GorillaTag")
             {
-                Directory.CreateDirectory(cosmeticPath);
-            }
-            if (!Directory.Exists(cosmeticPath + "/Hats"))
-            {
-                Directory.CreateDirectory(cosmeticPath + "/Hats");
-            }
-            if (!Directory.Exists(cosmeticPath + "/Holdables"))
-            {
-                Directory.CreateDirectory(cosmeticPath + "/Holdables");
-            }
-            if (!Directory.Exists(cosmeticPath + "/Badges"))
-            {
-                Directory.CreateDirectory(cosmeticPath + "/Badges");
-            }
-            if (!Directory.Exists(cosmeticPath + "/Materials"))
-            {
-                Directory.CreateDirectory(cosmeticPath + "/Materials");
-            }
-            this.AddComponent<Net>();
-            Harmony harmony = Harmony.CreateAndPatchAll(typeof(Plugin).Assembly, PluginInfo.GUID);
-            Type rigCache = typeof(GorillaTagger).Assembly.GetType("VRRigCache");
-            harmony.Patch(AccessTools.Method(rigCache, "AddRigToGorillaParent"), postfix: new HarmonyMethod(typeof(RigJoinPatch), nameof(RigJoinPatch.Patch)));
-            harmony.Patch(AccessTools.Method(rigCache, "RemoveRigFromGorillaParent"), prefix: new HarmonyMethod(typeof(RigLeavePatch), nameof(RigLeavePatch.Patch)));
-            GorillaTagger.Instance.offlineVRRig.OnColorChanged += UpdateColour;
+                StartCoroutine(checkVersion());
+                currentTaggedMaterial.mat = null;
+                currentMaterial.mat = null;
+                removeCosmetics = Config.Bind("Settings", "Remove Cosmetics", false, "Whether the mod should unequip normal cosmetics when equipping custom ones.");
+                hat = Config.Bind("Cosmetics", "Current Hat", "", "This is the current hat your using.");
+                Lholdable = Config.Bind("Cosmetics", "Current Left Holdable", "", "This is the current left holdable your using.");
+                Rholdable = Config.Bind("Cosmetics", "Current Right Holdable", "", "This is the current right holdable your using.");
+                badge = Config.Bind("Cosmetics", "Current Badge", "", "This is the current badge your using.");
+                material = Config.Bind("Cosmetics", "Current Material", "", "This is the current material your using.");
+                taggedMaterial = Config.Bind("Cosmetics", "Current Tagged Material", "", "This is the current tagged material your using.");
+                if (!Directory.Exists(cosmeticPath))
+                {
+                    Directory.CreateDirectory(cosmeticPath);
+                }
+                if (!Directory.Exists(cosmeticPath + "/Hats"))
+                {
+                    Directory.CreateDirectory(cosmeticPath + "/Hats");
+                }
+                if (!Directory.Exists(cosmeticPath + "/Holdables"))
+                {
+                    Directory.CreateDirectory(cosmeticPath + "/Holdables");
+                }
+                if (!Directory.Exists(cosmeticPath + "/Badges"))
+                {
+                    Directory.CreateDirectory(cosmeticPath + "/Badges");
+                }
+                if (!Directory.Exists(cosmeticPath + "/Materials"))
+                {
+                    Directory.CreateDirectory(cosmeticPath + "/Materials");
+                }
+                this.AddComponent<Net>();
+                Harmony harmony = Harmony.CreateAndPatchAll(typeof(Plugin).Assembly, PluginInfo.GUID);
+                Type rigCache = typeof(GorillaTagger).Assembly.GetType("VRRigCache");
+                harmony.Patch(AccessTools.Method(rigCache, "AddRigToGorillaParent"), postfix: new HarmonyMethod(typeof(RigJoinPatch), nameof(RigJoinPatch.Patch)));
+                harmony.Patch(AccessTools.Method(rigCache, "RemoveRigFromGorillaParent"), prefix: new HarmonyMethod(typeof(RigLeavePatch), nameof(RigLeavePatch.Patch)));
+                GorillaTagger.Instance.offlineVRRig.OnColorChanged += UpdateColour;
 
-            LoadAssets();
+                LoadAssets();
+            }
         }
 
         public async Task LoadAssets()
