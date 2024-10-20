@@ -1,11 +1,24 @@
-# CustomCosmetics
+![image](https://github.com/user-attachments/assets/bf8997de-4935-45ae-95a0-be8fc7fa7c53)
 
-A networked custom cosmetics mod for gorilla tag!
-**REQUIRES LATEST BANANA OS**
-The first finished release!
-The mod now has
-Custom Materials and Tagged Materials,
-Custom Holdables Left And Right hands,
-Custom Hats,
-Custom Badges,
-And its all networked! (except for custom behaviours)
+CustomCosmetics is a modification for 'Gorilla Tag' which adds Custom Cosmetics.
+
+# Features
+
+
+- Custom Materials & Tagged Materials
+
+- Custom Holdables for both hands
+
+- Custom Hats
+
+- Custom Badges
+
+- ALL cosmetics are networked (Except for custom behaviors)
+
+# Requirements
+
+### Latest version of [Banana OS](https://github.com/HuskyGT/Banana-OS)
+
+# Disclaimer
+
+*This product is not affiliated with Another Axiom Inc. or its videogames Gorilla Tag and Orion Drift and is not endorsed or otherwise sponsored by Another Axiom. Portions of the materials contained herein are property of Another Axiom. ©2021 Another Axiom Inc.*
