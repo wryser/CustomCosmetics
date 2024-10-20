@@ -13,7 +13,7 @@ CustomCosmetics is a modification for 'Gorilla Tag' which adds Custom Cosmetics.
 
 - Custom Badges
 
-- ALL cosmetics are networked (Except for custom behaviors)
+- All cosmetics are networked
 
 # Requirements
 
