@@ -1,5 +1,5 @@
 <div style="float: right;">
-  <img src="https://github.com/user-attachments/assets/0ca8f6d1-c893-4b4a-8e7f-79a886e1b8bb" width=70%; height=auto;</img></a>
+  <img src="https://github.com/user-attachments/assets/0ca8f6d1-c893-4b4a-8e7f-79a886e1b8bb" width=60%; height=auto;</img></a>
 </div>
 <div style="float: right;">
   <a href="https://www.patreon.com/wryser"><img src="https://blissfulhiker.com/wp-content/uploads/2023/12/support-me-on-patreon.png" width=50%; height=auto;</img></a>
