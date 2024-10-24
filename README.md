@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/bf8997de-4935-45ae-95a0-be8fc7fa7c53)
+![Uploading image.png…]()
 
 CustomCosmetics is a modification for 'Gorilla Tag' which adds Custom Cosmetics.
 
