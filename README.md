@@ -1,6 +1,9 @@
 ![image](https://github.com/user-attachments/assets/0ca8f6d1-c893-4b4a-8e7f-79a886e1b8bb)
 
 CustomCosmetics is a modification for 'Gorilla Tag' which adds Custom Cosmetics.
+<div style="float: left;">
+  <a href="https://www.patreon.com/wryser"><img src="https://blissfulhiker.com/wp-content/uploads/2023/12/support-me-on-patreon.png" width=80%; height=auto;</img></a>
+</div>
 
 # Features
 
