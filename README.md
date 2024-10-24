@@ -1,8 +1,7 @@
 <p align="center">
-    <img src="https://github.com/user-attachments/assets/0ca8f6d1-c893-4b4a-8e7f-79a886e1b8bbg" width=60% height=auto>
+    <img width="200" src="http://material-bread.org/logo-shadow.svg" alt="Material Bread logo">
 </p>
-CustomCosmetics is a modification for 'Gorilla Tag' which adds Custom Cosmetics.
-
+<h1 align="center">CustomCosmetics is a modification for 'Gorilla Tag' which adds Custom Cosmetics.</h1>
 # Features
 
 
