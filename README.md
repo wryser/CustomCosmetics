@@ -1,4 +1,4 @@
-<div style="float: right;">
+<div style="float: right; align: center;">
   <img src="https://github.com/user-attachments/assets/0ca8f6d1-c893-4b4a-8e7f-79a886e1b8bb" width=60%; height=auto;</img></a>
 </div>
 <div style="float: right;">
