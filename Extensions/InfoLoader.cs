@@ -1,77 +1,96 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using CustomCosmetics.Networking;
 using UnityEngine;
 using UnityEngine.UI;
-using static CustomCosmetics.Networking.NetworkingBehaviours;
 
 namespace CustomCosmetics.Extensions
 {
-    class InfoLoader
-    {
-        public static void GetInfo(string file, string mode)
-        {
-            GameObject cosmetic;
-            string[] info;
-            assetCache.TryGetValue(file, out cosmetic);
-
-            if (cosmetic.TryGetComponent(out Text values))
-            {
-                Plugin.instance.usingTextMethod = true;
-                info = values.text.Split("$");
-                switch (mode)
-                {
-                    case "Material":
-                        Plugin.instance.currentCosmeticFile = file;
-                        Plugin.instance.cosmeticName = info[0];
-                        Plugin.instance.cosmeticAuthor = info[1];
-                        Plugin.instance.cosmeticDescription = info[2];
-                        Plugin.instance.materialCustomColours = info[3].ToUpper() == "TRUE";
-                        break;
-                    case "Holdable":
-                        Plugin.instance.currentCosmeticFile = file;
-                        Plugin.instance.cosmeticName = info[0];
-                        Plugin.instance.cosmeticAuthor = info[1];
-                        Plugin.instance.cosmeticDescription = info[2];
-                        Plugin.instance.leftHand = info[3].ToUpper() == "TRUE";
-                        break;
-                    case "Badge":
-                        Plugin.instance.currentCosmeticFile = file;
-                        Plugin.instance.cosmeticName = info[0];
-                        Plugin.instance.cosmeticAuthor = info[1];
-                        Plugin.instance.cosmeticDescription = info[2];
-                        break;
-                    case "Hat":
-                        Plugin.instance.currentCosmeticFile = file;
-                        Plugin.instance.cosmeticName = info[0];
-                        Plugin.instance.cosmeticAuthor = info[1];
-                        Plugin.instance.cosmeticDescription = info[2];
-                        break;
-                }
-            }
-            else
-            {
-                Plugin.instance.usingTextMethod = false;
-                switch (mode)
-                {
-                    case "Material":
-                        Plugin.instance.currentCosmeticFile = file;
-                        Plugin.instance.matDes = cosmetic.GetComponent<MaterialDescriptor>();
-                        break;
-                    case "Holdable":
-                        Plugin.instance.currentCosmeticFile = file;
-                        Plugin.instance.holdableDes = cosmetic.GetComponent<HoldableDescriptor>();
-                        break;
-                    case "Hat":
-                        Plugin.instance.currentCosmeticFile = file;
-                        Plugin.instance.hatDes = cosmetic.GetComponent<HatDescriptor>();
-                        break;
-                    case "Badge":
-                        Plugin.instance.currentCosmeticFile = file;
-                        Plugin.instance.badgeDes = cosmetic.GetComponent<BadgeDescriptor>();
-                        break;
-                }
-            }
-        }
-    }
+	// Token: 0x02000021 RID: 33
+	internal class InfoLoader
+	{
+		// Token: 0x06000078 RID: 120 RVA: 0x00007650 File Offset: 0x00005850
+		public static void GetInfo(string file, string mode)
+		{
+			GameObject gameObject;
+			NetworkingBehaviours.assetCache.TryGetValue(file, out gameObject);
+			bool flag = gameObject.TryGetComponent<Text>(out Text text);
+			if (flag)
+			{
+				Plugin.instance.usingTextMethod = true;
+				string[] array = text.text.Split("$", StringSplitOptions.None);
+				if (!(mode == "Material"))
+				{
+					if (!(mode == "Holdable"))
+					{
+						if (!(mode == "Badge"))
+						{
+							if (mode == "Hat")
+							{
+								Plugin.instance.currentCosmeticFile = file;
+								Plugin.instance.cosmeticName = array[0];
+								Plugin.instance.cosmeticAuthor = array[1];
+								Plugin.instance.cosmeticDescription = array[2];
+							}
+						}
+						else
+						{
+							Plugin.instance.currentCosmeticFile = file;
+							Plugin.instance.cosmeticName = array[0];
+							Plugin.instance.cosmeticAuthor = array[1];
+							Plugin.instance.cosmeticDescription = array[2];
+						}
+					}
+					else
+					{
+						Plugin.instance.currentCosmeticFile = file;
+						Plugin.instance.cosmeticName = array[0];
+						Plugin.instance.cosmeticAuthor = array[1];
+						Plugin.instance.cosmeticDescription = array[2];
+						Plugin.instance.leftHand = array[3].ToUpper() == "TRUE";
+					}
+				}
+				else
+				{
+					Plugin.instance.currentCosmeticFile = file;
+					Plugin.instance.cosmeticName = array[0];
+					Plugin.instance.cosmeticAuthor = array[1];
+					Plugin.instance.cosmeticDescription = array[2];
+					Plugin.instance.materialCustomColours = array[3].ToUpper() == "TRUE";
+				}
+			}
+			else
+			{
+				Plugin.instance.usingTextMethod = false;
+				if (!(mode == "Material"))
+				{
+					if (!(mode == "Holdable"))
+					{
+						if (!(mode == "Hat"))
+						{
+							if (mode == "Badge")
+							{
+								Plugin.instance.currentCosmeticFile = file;
+								Plugin.instance.badgeDes = gameObject.GetComponent<BadgeDescriptor>();
+							}
+						}
+						else
+						{
+							Plugin.instance.currentCosmeticFile = file;
+							Plugin.instance.hatDes = gameObject.GetComponent<HatDescriptor>();
+						}
+					}
+					else
+					{
+						Plugin.instance.currentCosmeticFile = file;
+						Plugin.instance.holdableDes = gameObject.GetComponent<HoldableDescriptor>();
+					}
+				}
+				else
+				{
+					Plugin.instance.currentCosmeticFile = file;
+					Plugin.instance.matDes = gameObject.GetComponent<MaterialDescriptor>();
+				}
+			}
+		}
+	}
 }

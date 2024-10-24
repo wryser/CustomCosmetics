@@ -1,36 +1,33 @@
-﻿using HarmonyLib;
+﻿using System;
+using CustomCosmetics.Networking;
+using HarmonyLib;
 using UnityEngine;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using static CustomCosmetics.Networking.NetworkingBehaviours;
 
 namespace CustomCosmetics.Patches
 {
-    /// <summary>
-    /// This is an example patch, made to demonstrate how to use Harmony. You should remove it if it is not used.
-    /// </summary>
-    [HarmonyPatch(typeof(GorillaSkin))]
-    [HarmonyPatch("ShowSkin", MethodType.Normal)]
-    internal class SkinPatch
-    {
-        private static void Postfix(VRRig rig, GorillaSkin skin, bool useDefaultBodySkin = false)
-        {
-            try
-            {
-                if(useDefaultBodySkin && rig.isLocal)
-                {
-                    Plugin.instance.EnableMaterial();
-                }
-                else if(useDefaultBodySkin)
-                {
-                    EnableNetworkMaterial(rig);
-                }
-            }
-            catch(Exception e)
-            {
-                Debug.LogException(e);
-            }
-        }
-    }
+	// Token: 0x0200001C RID: 28
+	[HarmonyPatch(typeof(GorillaSkin))]
+	[HarmonyPatch("ShowSkin", 0)]
+	internal class SkinPatch
+	{
+		// Token: 0x0600006A RID: 106 RVA: 0x00006DF8 File Offset: 0x00004FF8
+		private static void Postfix(VRRig rig, GorillaSkin skin, bool useDefaultBodySkin = false)
+		{
+			try
+			{
+				if (useDefaultBodySkin && rig.isLocal)
+				{
+					Plugin.instance.EnableMaterial();
+				}
+				else if (useDefaultBodySkin)
+				{
+					NetworkingBehaviours.EnableNetworkMaterial(rig);
+				}
+			}
+			catch (Exception ex)
+			{
+				Debug.LogException(ex);
+			}
+		}
+	}
 }

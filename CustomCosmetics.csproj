@@ -10,7 +10,7 @@
       <HintPath>$(BepInExAssemblyPath)\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>$(GameAssemblyPath)\Assembly-CSharp.dll</HintPath>
+      <HintPath>$(GamePath)\Assembly-CSharp_publicized.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
       <HintPath>$(GameAssemblyPath)\Assembly-CSharp-firstpass.dll</HintPath>
@@ -19,7 +19,7 @@
       <HintPath>$(GameAssemblyPath)\BakeryRuntimeAssembly.dll</HintPath>
     </Reference>
     <Reference Include="BananaOS">
-      <HintPath>E:\Steam Games\steamapps\common\Gorilla Tag\BepInEx\plugins\BananaOS\BananaOS.dll</HintPath>
+      <HintPath>$(PluginsPath)\BananaOS.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx">
       <HintPath>$(BepInExAssemblyPath)\BepInEx.dll</HintPath>
@@ -39,15 +39,6 @@
     <Reference Include="Oculus.VR">
       <HintPath>$(GameAssemblyPath)\Oculus.VR.dll</HintPath>
     </Reference>
-    <Reference Include="Pathfinding.ClipperLib">
-      <HintPath>E:\Steam Games\steamapps\common\Gorilla Tag\Gorilla Tag_Data\Managed\Pathfinding.ClipperLib.dll</HintPath>
-    </Reference>
-    <Reference Include="Pathfinding.Ionic.Zip.Reduced">
-      <HintPath>E:\Steam Games\steamapps\common\Gorilla Tag\Gorilla Tag_Data\Managed\Pathfinding.Ionic.Zip.Reduced.dll</HintPath>
-    </Reference>
-    <Reference Include="Pathfinding.Poly2Tri">
-      <HintPath>E:\Steam Games\steamapps\common\Gorilla Tag\Gorilla Tag_Data\Managed\Pathfinding.Poly2Tri.dll</HintPath>
-    </Reference>
     <Reference Include="Photon3Unity3D">
       <HintPath>$(GameAssemblyPath)\Photon3Unity3D.dll</HintPath>
     </Reference>
@@ -65,9 +56,6 @@
     </Reference>
     <Reference Include="PhotonVoice.API">
       <HintPath>$(GameAssemblyPath)\PhotonVoice.API.dll</HintPath>
-    </Reference>
-    <Reference Include="PhotonVoice.Fusion">
-      <HintPath>E:\Steam Games\steamapps\common\Gorilla Tag\Gorilla Tag_Data\Managed\PhotonVoice.Fusion.dll</HintPath>
     </Reference>
     <Reference Include="PhotonVoice.PUN">
       <HintPath>$(GameAssemblyPath)\PhotonVoice.PUN.dll</HintPath>

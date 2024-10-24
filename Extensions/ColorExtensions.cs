@@ -1,43 +1,40 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 
 namespace CustomCosmetics.Extensions
 {
-    public static class ColorExtensions
-    {
-        public static Color parseColor(string sourceString)
-        {
-            if (sourceString == null || sourceString == "" || sourceString == "$")
-            {
-                return Color.black;
-            }
-            string outString;
-            Color outColor;
-            string[] splitString;
-
-            // Trim extranious parenthesis
-            outString = sourceString.Replace("(", string.Empty);
-            outString = outString.Replace(")", string.Empty);
-            outString = outString.Replace("RGBA", string.Empty);
-
-            // Split delimted values into an array
-            splitString = outString.Split(",");
-
-            // Build new Vector3 from array elements
-            float x;
-            float y;
-            float z;
-            float.TryParse(splitString[0], out x);
-            float.TryParse(splitString[1], out y);
-            float.TryParse(splitString[2], out z);
-            outColor.r = x;
-            outColor.g = y;
-            outColor.b = z;
-            outColor.a = 1f;
-
-            return outColor;
-        }
-    }
+	// Token: 0x02000020 RID: 32
+	public static class ColorExtensions
+	{
+		// Token: 0x06000077 RID: 119 RVA: 0x00007580 File Offset: 0x00005780
+		public static Color parseColor(string sourceString)
+		{
+			bool flag = sourceString == null || sourceString == "" || sourceString == "$";
+			Color color;
+			if (flag)
+			{
+				color = Color.black;
+			}
+			else
+			{
+				string text = sourceString.Replace("(", string.Empty);
+				text = text.Replace(")", string.Empty);
+				text = text.Replace("RGBA", string.Empty);
+				string[] array = text.Split(",", StringSplitOptions.None);
+				float num;
+				float.TryParse(array[0], out num);
+				float num2;
+				float.TryParse(array[1], out num2);
+				float num3;
+				float.TryParse(array[2], out num3);
+				Color color2;
+				color2.r = num;
+				color2.g = num2;
+				color2.b = num3;
+				color2.a = 1f;
+				color = color2;
+			}
+			return color;
+		}
+	}
 }
