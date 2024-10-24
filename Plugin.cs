@@ -34,7 +34,7 @@ namespace CustomCosmetics
 
 		private IEnumerator checkVersion()
 		{
-			UnityWebRequest www = UnityWebRequest.Get(PluginInfo.DevVersionCheck);
+			UnityWebRequest www = UnityWebRequest.Get(PluginInfo.VersionCheck);
 			yield return www.SendWebRequest();
 			if (www.result != UnityWebRequest.Result.Success)
 			{
@@ -45,7 +45,7 @@ namespace CustomCosmetics
 				string[] info = www.downloadHandler.text.Split("$", StringSplitOptions.None);
 				Debug.Log("Version is: " + info[0] + " Discord link is: " + info[1]);
 				Debug.Log("Got Version!");
-				if (info[0] != "1.2.5.0")
+				if (info[0] != PluginInfo.Version)
 				{
 					BananaNotifications.DisplayErrorNotification("<align=center><size=2><b>You are on an old version of Custom Cosmetics\nPlease check the watch page for more info</b></size></align>", 5f);
 					Debug.Log("Incorrect Version");
@@ -53,7 +53,7 @@ namespace CustomCosmetics
 					str.AppendLine("<color=red>==Wrong Version==</color>");
 					str.AppendLine("");
 					str.AppendLine("You are on an old version of Custom Cosmetics");
-					str.AppendLine("Your Version: 1.2.5.0\nLatest Version: " + info[0] + "\n\nPlease download the latest version of the mod from the discord:\n" + info[1]);
+					str.AppendLine($"Your Version: {PluginInfo.Version}\nLatest Version: " + info[0] + "\n\nPlease download the latest version of the mod from the discord:\n" + info[1]);
 					errorText = str;
 					NetworkingBehaviours.assetCache.Clear();
 					NetworkingBehaviours.nameAssetCache.Clear();
