@@ -2,7 +2,7 @@
     <img width="auto" height="auto" src="https://raw.githubusercontent.com/wryser/CustomCosmetics/refs/heads/main/CustomCosmeticsArt.png" alt="CustomCosmetics Art">
 </p>
 <p align="center">
-    <a href="https://www.patreon.com/wryser"><img width="30%" height="auto" src="https://blissfulhiker.com/wp-content/uploads/2023/12/support-me-on-patreon.png">
+    <a href="https://www.patreon.com/wryser"><img width="50%" height="auto" src="https://blissfulhiker.com/wp-content/uploads/2023/12/support-me-on-patreon.png">
 </p>
 <h3 align="center">CustomCosmetics is a modification for 'Gorilla Tag' which adds Custom Cosmetics.</h1>
 
