@@ -1,5 +1,5 @@
 <p align="center">
-    <img width="60%" height="auto" src="https://cdn.discordapp.com/attachments/1264485680927473664/1298881362819940393/CustomCosmeticsArt.png?ex=671b2d08&is=6719db88&hm=2b69b1c13d1d2fa3e2f9a0584bd09cf7c568f688e0d0468a0b3bbf1c7427bc24&" alt="CustomCosmetics Art">
+    <img width="60%" height="auto" src="https://raw.githubusercontent.com/wryser/CustomCosmetics/refs/heads/main/CustomCosmeticsArt.png" alt="CustomCosmetics Art">
 </p>
 <p align="center">
     <a href="https://www.patreon.com/wryser"><img width="30%" height="auto" src="https://blissfulhiker.com/wp-content/uploads/2023/12/support-me-on-patreon.png">
